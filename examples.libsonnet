@@ -6,7 +6,7 @@ p.ex({
     inputs: [{
       method: 'GET',
       path: '/api/v1/query',
-      params: { query: 'up' },
+      query: { query: 'up' },
     }],
   }, {
     name: 'get with extra headers',

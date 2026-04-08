@@ -1,0 +1,28 @@
+{
+  "info": {
+    "title": "Unsafe Jsonnet identifiers",
+    "version": "1"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/user-profiles": {
+      "get": {
+        "operationId": "listUserProfiles",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Trace-Id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    }
+  }
+}

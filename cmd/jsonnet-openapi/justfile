@@ -1,0 +1,25 @@
+
+test:
+    go test ./...
+
+lint:
+    golangci-lint run ./...
+
+build:
+    go build -o jsonnet-openapi .
+
+install:
+    dest=$(go env GOBIN); [ -n "$dest" ] || dest=$(go env GOPATH)/bin; go build -o "$dest/jsonnet-openapi" .
+
+test-e2e:
+    JSONNET_OPENAPI_BINARY="$(pwd)/jsonnet-openapi" go test -v -tags e2e ./tests/...
+
+regen-testdata: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    root="$(pwd)"
+    for name in minimal getcollision onepath paramonly multiparam unsafeident; do
+      "$root/jsonnet-openapi" gen "$root/tests/testdata/${name}.yaml" -o "$root/tests/testdata/$name" --service "$name" -q
+    done
+
+ci: lint test build test-e2e

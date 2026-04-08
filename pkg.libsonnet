@@ -8,9 +8,11 @@ p.pkg({
   target: 'openapi',
 }, |||
   Read-only HTTP GET requests against a REST API. Base URL and default headers are configured when the plugin is started or embedded in Go.
+
+  Generated operation functions take `args` with optional `query` and `headers` objects (OpenAPI `in: query` / `in: header`); path parameters are separate function arguments on the nested path API.
 |||, {
   request: p.desc(|||
-    Sends a GET request. `input` is an object with `method` (`GET` only), `path`, optional `headers`, and optional `params` (query string).
+    Sends a GET request. `input` is an object with `method` (`GET` only), `path`, optional `headers`, and optional `query` (query string map).
 
     On success returns parsed JSON. On failure returns a `Status` object (`kind: "Status"`).
   |||),

@@ -97,9 +97,9 @@ func (s *Stage) a_jsonnet_request_is_evaluated(method string, path string) *Stag
 	return s
 }
 
-func (s *Stage) a_jsonnet_request_with_params_and_headers_is_evaluated(method string, path string, query string, header string) *Stage {
+func (s *Stage) a_jsonnet_request_with_query_and_headers_is_evaluated(method string, path string, query string, header string) *Stage {
 	snippet := fmt.Sprintf(
-		`std.native('invoke:openapi')('request', [{method: '%s', path: '%s', params: {query: '%s'}, headers: {'X-Test': '%s'}}])`,
+		`std.native('invoke:openapi')('request', [{method: '%s', path: '%s', query: {query: '%s'}, headers: {'X-Test': '%s'}}])`,
 		method,
 		path,
 		query,

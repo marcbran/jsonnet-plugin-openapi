@@ -18,7 +18,7 @@ type RequestInput struct {
 	Method  string
 	Path    string
 	Headers map[string]string
-	Params  map[string]string
+	Query   map[string]string
 }
 
 func Request(cfg *Config) jsonnet.NativeFunction {
@@ -62,7 +62,7 @@ func parseRequestInput(input []any) (RequestInput, error) {
 		Method:  method,
 		Path:    path,
 		Headers: map[string]string{},
-		Params:  map[string]string{},
+		Query:   map[string]string{},
 	}
 	if raw["headers"] != nil {
 		hm, ok := raw["headers"].(map[string]any)
@@ -70,6 +70,9 @@ func parseRequestInput(input []any) (RequestInput, error) {
 			return RequestInput{}, fmt.Errorf("headers must be an object")
 		}
 		for k, v := range hm {
+			if v == nil {
+				continue
+			}
 			s, err := stringFromAny(v)
 			if err != nil {
 				return RequestInput{}, fmt.Errorf("header %q: %w", k, err)
@@ -77,20 +80,20 @@ func parseRequestInput(input []any) (RequestInput, error) {
 			ri.Headers[k] = s
 		}
 	}
-	if raw["params"] != nil {
-		pm, ok := raw["params"].(map[string]any)
+	if raw["query"] != nil {
+		qm, ok := raw["query"].(map[string]any)
 		if !ok {
-			return RequestInput{}, fmt.Errorf("params must be an object")
+			return RequestInput{}, fmt.Errorf("query must be an object")
 		}
-		for k, v := range pm {
+		for k, v := range qm {
 			if v == nil {
 				continue
 			}
 			s, err := stringFromAny(v)
 			if err != nil {
-				return RequestInput{}, fmt.Errorf("param %q: %w", k, err)
+				return RequestInput{}, fmt.Errorf("query %q: %w", k, err)
 			}
-			ri.Params[k] = s
+			ri.Query[k] = s
 		}
 	}
 	return ri, nil
@@ -124,7 +127,7 @@ func runRequest(ctx context.Context, cfg *Config, ri RequestInput) (any, error) 
 		return clientFailureStatus(400, "invalid url"), nil
 	}
 	q := u.Query()
-	for k, v := range ri.Params {
+	for k, v := range ri.Query {
 		q.Set(k, v)
 	}
 	u.RawQuery = q.Encode()

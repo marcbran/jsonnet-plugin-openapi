@@ -23,15 +23,15 @@ func TestParseRequestInput(t *testing.T) {
 				Method:  "GET",
 				Path:    "/api/v1/query",
 				Headers: map[string]string{},
-				Params:  map[string]string{},
+				Query:   map[string]string{},
 			},
 		},
 		{
-			name: "with params and headers",
+			name: "with query and headers",
 			input: []any{map[string]any{
 				"method": "GET",
 				"path":   "/x",
-				"params": map[string]any{"q": "up", "n": float64(1)},
+				"query":  map[string]any{"q": "up", "n": float64(1)},
 				"headers": map[string]any{
 					"X-Foo": "bar",
 					"X-B":   true,
@@ -44,24 +44,43 @@ func TestParseRequestInput(t *testing.T) {
 					"X-Foo": "bar",
 					"X-B":   "true",
 				},
-				Params: map[string]string{
+				Query: map[string]string{
 					"q": "up",
 					"n": "1",
 				},
 			},
 		},
 		{
-			name: "skip nil param",
+			name: "skip nil query value",
 			input: []any{map[string]any{
 				"method": "GET",
 				"path":   "/y",
-				"params": map[string]any{"a": nil, "b": "c"},
+				"query":  map[string]any{"a": nil, "b": "c"},
 			}},
 			want: RequestInput{
 				Method:  "GET",
 				Path:    "/y",
 				Headers: map[string]string{},
-				Params:  map[string]string{"b": "c"},
+				Query:   map[string]string{"b": "c"},
+			},
+		},
+		{
+			name: "skip nil header",
+			input: []any{map[string]any{
+				"method": "GET",
+				"path":   "/y",
+				"headers": map[string]any{
+					"X-Optional": nil,
+					"X-Set":      "v",
+				},
+			}},
+			want: RequestInput{
+				Method: "GET",
+				Path:   "/y",
+				Headers: map[string]string{
+					"X-Set": "v",
+				},
+				Query: map[string]string{},
 			},
 		},
 		{
@@ -106,13 +125,13 @@ func TestParseRequestInput(t *testing.T) {
 			wantError: "headers must be an object",
 		},
 		{
-			name: "params not object",
+			name: "query not object",
 			input: []any{map[string]any{
 				"method": "GET",
 				"path":   "/",
-				"params": []any{},
+				"query":  []any{},
 			}},
-			wantError: "params must be an object",
+			wantError: "query must be an object",
 		},
 		{
 			name: "bad header value",
