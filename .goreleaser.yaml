@@ -58,6 +58,21 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
+dockers:
+  - ids:
+      - jsonnet-openapi
+    dockerfile: cmd/jsonnet-openapi/Dockerfile
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/marcbran/jsonnet-openapi:v{{ .Major }}"
+      - "ghcr.io/marcbran/jsonnet-openapi:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/marcbran/jsonnet-openapi:{{ .Tag }}"
+      - "ghcr.io/marcbran/jsonnet-openapi:latest"
+
+docker_digest:
+  name_template: "digests.txt"
+
 source:
   enabled: true
 
