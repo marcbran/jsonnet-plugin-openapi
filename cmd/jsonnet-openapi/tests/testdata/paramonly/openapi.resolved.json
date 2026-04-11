@@ -1,0 +1,29 @@
+{
+  "info": {
+    "title": "P",
+    "version": "1"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/users/{userId}": {
+      "get": {
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    }
+  }
+}

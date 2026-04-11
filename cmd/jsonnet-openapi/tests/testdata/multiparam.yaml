@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Multiparam
+  version: "1"
+paths:
+  /items:
+    get:
+      operationId: listItems
+      parameters:
+        - name: zebra
+          in: query
+          schema:
+            type: string
+        - name: alpha
+          in: query
+          schema:
+            type: string
+        - name: HeaderB
+          in: header
+          schema:
+            type: string
+        - name: HeaderA
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok

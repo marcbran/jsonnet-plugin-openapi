@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Get collision
+  version: "1"
+paths:
+  /r:
+    get:
+      operationId: listR
+      responses:
+        "200":
+          description: ok
+  /r/get:
+    get:
+      operationId: literalGet
+      responses:
+        "200":
+          description: ok
+  /r/{id}:
+    get:
+      operationId: getById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok

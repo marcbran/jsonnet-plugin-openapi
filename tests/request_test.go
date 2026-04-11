@@ -49,14 +49,14 @@ func TestRequestTimeout(t *testing.T) {
 		the_result_message_contains("context deadline exceeded")
 }
 
-func TestRequestPassesQueryParamsAndHeaders(t *testing.T) {
+func TestRequestPassesQueryAndHeaders(t *testing.T) {
 	given, when, then := scenario(t)
 
 	given.
 		a_server_echoing_query_and_header()
 
 	when.
-		a_jsonnet_request_with_params_and_headers_is_evaluated("GET", "/echo", "up", "hello")
+		a_jsonnet_request_with_query_and_headers_is_evaluated("GET", "/echo", "up", "hello")
 
 	then.
 		the_eval_has_no_error().and().

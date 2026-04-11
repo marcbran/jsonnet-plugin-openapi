@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: Minimal
+  version: "1"
+paths:
+  /users:
+    get:
+      operationId: listUsers
+      responses:
+        "200":
+          description: ok
+  /users/{userId}:
+    get:
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok

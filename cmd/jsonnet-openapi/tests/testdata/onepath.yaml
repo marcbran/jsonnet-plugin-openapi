@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: One
+  version: "1"
+paths:
+  /users:
+    get:
+      operationId: listUsers
+      responses:
+        "200":
+          description: ok
