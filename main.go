@@ -17,5 +17,5 @@ func main() {
 	if strings.TrimSpace(base) != "" {
 		opts = append(opts, openapi.WithBaseURL(base))
 	}
-	openapi.NewPlugin(name, opts...).Serve()
+	openapi.Plugin(name, opts...).Serve()
 }

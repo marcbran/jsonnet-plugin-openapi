@@ -16,6 +16,7 @@ func TestGenerate(t *testing.T) {
 		{name: "paramonly", spec: "paramonly", service: "paramonly"},
 		{name: "multiparam", spec: "multiparam", service: "multiparam"},
 		{name: "unsafeident", spec: "unsafeident", service: "unsafeident"},
+		{name: "reservedimport", spec: "reservedimport", service: "reservedimport"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

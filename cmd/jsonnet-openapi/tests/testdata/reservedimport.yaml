@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Reserved import path segment
+  version: "1"
+paths:
+  /import:
+    get:
+      operationId: getImportRoot
+      responses:
+        "200":
+          description: ok

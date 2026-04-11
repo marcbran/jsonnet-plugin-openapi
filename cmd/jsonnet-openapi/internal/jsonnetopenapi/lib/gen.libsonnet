@@ -18,8 +18,32 @@ function(api)
         else identPart(s[i]) && check(i + 1);
       check(0);
 
+  local jsonnetKeywords = [
+    'assert',
+    'else',
+    'error',
+    'false',
+    'for',
+    'function',
+    'if',
+    'import',
+    'importstr',
+    'in',
+    'local',
+    'null',
+    'self',
+    'super',
+    'tailstrict',
+    'then',
+    'true',
+  ];
+
+  local isJsonnetKeyword(s) = std.member(jsonnetKeywords, s);
+
+  local isUnquotedFieldName(s) = isJsonnetIdent(s) && !isJsonnetKeyword(s);
+
   local objectField(name, expr) =
-    if std.type(name) == 'string' && isJsonnetIdent(name) then j.Field(name, expr) else j.Field(j.String(name), expr);
+    if std.type(name) == 'string' && isUnquotedFieldName(name) then j.Field(name, expr) else j.Field(j.String(name), expr);
 
   local pathParamInner(seg) =
     local len = std.length(seg);
@@ -28,7 +52,7 @@ function(api)
     else null;
 
   local mangledPathVar(name) =
-    if isJsonnetIdent(name) then name
+    if isJsonnetIdent(name) && !isJsonnetKeyword(name) then name
     else 'p_' + std.md5(name);
 
   local hasLeaf(node) = std.get(node, 'leaf', null) != null;
@@ -113,7 +137,7 @@ function(api)
     local inner = pathParamInner(k);
     if inner != null then
       local pv = mangledPathVar(inner);
-      local fieldId = if isJsonnetIdent(inner) then inner else j.String(inner);
+      local fieldId = if isUnquotedFieldName(inner) then inner else j.String(inner);
       j.FieldFunction(fieldId, [j.Parameter(pv)], expr)
     else
       objectField(k, expr);

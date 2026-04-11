@@ -46,7 +46,7 @@ func WithHTTPClient(client *http.Client) Option {
 	}
 }
 
-func NewPlugin(name string, opts ...Option) *jpoet.Plugin {
+func Plugin(name string, opts ...Option) *jpoet.Plugin {
 	cfg := &Config{
 		Client: &http.Client{
 			Timeout: defaultRequestTimeout,

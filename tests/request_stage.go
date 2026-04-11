@@ -37,7 +37,7 @@ func (s *Stage) a_server_returning_empty_body() *Stage {
 		w.WriteHeader(http.StatusOK)
 	}))
 	s.t.(*testing.T).Cleanup(s.srv.Close)
-	s.plugin = openapi.NewPlugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
+	s.plugin = openapi.Plugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
 	return s
 }
 
@@ -48,7 +48,7 @@ func (s *Stage) a_server_returning_not_found(body string) *Stage {
 		require.NoError(s.t, err)
 	}))
 	s.t.(*testing.T).Cleanup(s.srv.Close)
-	s.plugin = openapi.NewPlugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
+	s.plugin = openapi.Plugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
 	return s
 }
 
@@ -62,7 +62,7 @@ func (s *Stage) a_slow_server_and_short_timeout() *Stage {
 	s.t.(*testing.T).Cleanup(s.srv.Close)
 	client := s.srv.Client()
 	client.Timeout = 10 * time.Millisecond
-	s.plugin = openapi.NewPlugin(
+	s.plugin = openapi.Plugin(
 		"openapi",
 		openapi.WithBaseURL(s.srv.URL),
 		openapi.WithHTTPClient(client),
@@ -82,7 +82,7 @@ func (s *Stage) a_server_echoing_query_and_header() *Stage {
 		require.NoError(s.t, err)
 	}))
 	s.t.(*testing.T).Cleanup(s.srv.Close)
-	s.plugin = openapi.NewPlugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
+	s.plugin = openapi.Plugin("openapi", openapi.WithBaseURL(s.srv.URL), openapi.WithHTTPClient(s.srv.Client()))
 	return s
 }
 

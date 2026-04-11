@@ -1,0 +1,19 @@
+{
+  "info": {
+    "title": "Reserved import path segment",
+    "version": "1"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/import": {
+      "get": {
+        "operationId": "getImportRoot",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ func (l *Loader) Load(ctx context.Context, ref string) (jsonnetopenapi.LoadedSpe
 	if err != nil {
 		return jsonnetopenapi.LoadedSpec{}, err
 	}
-	err = doc.Validate(ctx)
+	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
 		return jsonnetopenapi.LoadedSpec{}, err
 	}
