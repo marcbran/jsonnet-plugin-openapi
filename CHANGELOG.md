@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.1.0...v0.1.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* adjust for real world example API ([#7](https://github.com/marcbran/jsonnet-plugin-openapi/issues/7)) ([6f5c8db](https://github.com/marcbran/jsonnet-plugin-openapi/commit/6f5c8db57ef07d5b12058d65b58ff7a41c45993a))
+
 ## [0.1.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.0.0...v0.1.0) (2026-04-11)
 
 
