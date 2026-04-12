@@ -36,3 +36,21 @@ func TestGenerate(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateAndCall(t *testing.T) {
+	given, when, then := scenario(t)
+
+	given.
+		a_docker_container("prom/prometheus", 9090).and().
+		a_spec_url("/api/v1/openapi.yaml").and().
+		a_service("prometheus").and().
+		the_gen_command_is_run()
+
+	when.
+		a_jsonnet_request_is_evaluated("/api/v1", "prometheus.features.get({})")
+
+	then.
+		the_gen_has_no_error().and().
+		the_eval_has_no_error().and().
+		the_result_has_status("success")
+}
