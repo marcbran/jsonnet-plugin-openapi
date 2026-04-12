@@ -21,6 +21,11 @@ type Stage struct {
 
 	lastOutput openapipkg.Output
 	lastErr    string
+
+	liveHTTPOrigin string
+
+	evalOut map[string]any
+	evalErr error
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {
