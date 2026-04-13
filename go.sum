@@ -49,8 +49,8 @@ github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/marcbran/jpoet v0.15.0 h1:qtxR7RooNqysT9EtcfsjxEajf43d/Eng00JSw9SztLI=
 github.com/marcbran/jpoet v0.15.0/go.mod h1:yPL0nAMVVQr9qsIkewQ/k3A4X20Dfnt2yutOCtJDAoI=
-github.com/marcbran/jsonnet-plugin-jsonnet v0.2.1 h1:UT3e9BhoXoFrsR/1zjB1qELxvAwHjdS+C6kfeMbJx68=
-github.com/marcbran/jsonnet-plugin-jsonnet v0.2.1/go.mod h1:1v65TTJ+1RDjY8pp7+/zvq0QEwVALEa5SNPYut2+mLE=
+github.com/marcbran/jsonnet-plugin-jsonnet v0.3.0 h1:EMq+L08Aypmvrhklt0is0TtvwYHuMKv98oXFh094YM8=
+github.com/marcbran/jsonnet-plugin-jsonnet v0.3.0/go.mod h1:t0r5ZEobjCgVa3pOpLB/zGvh37i76/eqhgPbtTlsico=
 github.com/mattn/go-colorable v0.1.9/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-colorable v0.1.12/go.mod h1:u5H1YNBxpqRaxsYJYSkiCWKzEfiAb1Gb520KVy5xxl4=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
