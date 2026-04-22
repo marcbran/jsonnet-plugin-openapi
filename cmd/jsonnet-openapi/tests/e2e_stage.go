@@ -26,6 +26,10 @@ type Stage struct {
 
 	evalOut map[string]any
 	evalErr error
+
+	batchJobs        []openapipkg.Input
+	lastBatchOutputs []openapipkg.Output
+	lastBatchErr     string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

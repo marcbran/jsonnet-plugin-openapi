@@ -18,6 +18,18 @@ func NewFacade(loader OpenAPILoader) openapipkg.Facade {
 	return &facade{loader: loader}
 }
 
+func (g *facade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]openapipkg.Output, error) {
+	outs := make([]openapipkg.Output, 0, len(jobs))
+	for _, in := range jobs {
+		out, err := g.Generate(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+		outs = append(outs, out)
+	}
+	return outs, nil
+}
+
 func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
 	ls, err := g.loader.Load(ctx, in.Spec)
 	if err != nil {
