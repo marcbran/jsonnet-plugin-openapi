@@ -13,16 +13,16 @@ func writeGeneratedLibsonnet(outDir string, payload *GenPayload) error {
 	if err != nil {
 		return err
 	}
-	err = jpoet.NewEval().
-		FileImport([]string{}).
-		FSImport(lib).
-		FSImport(imports.Fs).
-		Plugin(jsonnet.Plugin()).
-		TLACode("api", string(apiJSON)).
-		FileInput("./lib/gen.libsonnet").
-		Serialize(false).
-		DirectoryOutput(outDir).
-		Eval()
+	err = jpoet.Eval(
+		jpoet.FileImport([]string{}),
+		jpoet.FSImport(lib),
+		jpoet.FSImport(imports.Fs),
+		jpoet.WithPlugin(jsonnet.Plugin()),
+		jpoet.TLACode("api", string(apiJSON)),
+		jpoet.FileInput("./lib/gen.libsonnet"),
+		jpoet.Serialize(false),
+		jpoet.DirectoryOutput(outDir),
+	)
 	if err != nil {
 		return err
 	}
