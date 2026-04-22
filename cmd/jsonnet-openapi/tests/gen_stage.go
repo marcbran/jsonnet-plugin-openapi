@@ -166,13 +166,13 @@ func (s *Stage) a_jsonnet_request_is_evaluated(baseURL string, expr string) *Sta
 	}
 	snippet := fmt.Sprintf("local %s = import 'main.libsonnet';\n%s", s.service, expr)
 	var out map[string]any
-	s.evalErr = jpoet.NewEval().
-		Plugin(openapiplug.Plugin(s.service, openapiplug.WithBaseURL(baseURL))).
-		FileImport([]string{s.outDir}).
-		SnippetInput("eval.jsonnet", snippet).
-		ValueOutput(&out).
-		Serialize(false).
-		Eval()
+	s.evalErr = jpoet.Eval(
+		jpoet.WithPlugin(openapiplug.Plugin(s.service, openapiplug.WithBaseURL(baseURL))),
+		jpoet.FileImport([]string{s.outDir}),
+		jpoet.SnippetInput("eval.jsonnet", snippet),
+		jpoet.ValueOutput(&out),
+		jpoet.Serialize(false),
+	)
 	s.evalOut = out
 	return s
 }
