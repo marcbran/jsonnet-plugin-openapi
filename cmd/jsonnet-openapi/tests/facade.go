@@ -30,6 +30,54 @@ func NewCLIFacade() (openapipkg.Facade, error) {
 	return &CLIFacade{binaryPath: binaryPath}, nil
 }
 
+func (f *CLIFacade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]openapipkg.Output, error) {
+	fh, err := os.CreateTemp("", "openapi-batch-*.json")
+	if err != nil {
+		return nil, err
+	}
+	path := fh.Name()
+	cleanup := func() {
+		_ = os.Remove(path)
+	}
+	err = json.NewEncoder(fh).Encode(jobs)
+	if err != nil {
+		cleanup()
+		_ = fh.Close()
+		return nil, err
+	}
+	err = fh.Close()
+	if err != nil {
+		cleanup()
+		return nil, err
+	}
+	defer cleanup()
+	args := []string{
+		"batch",
+		path,
+		"--format",
+		"json",
+		"-q",
+	}
+	cmd := exec.CommandContext(ctx, f.binaryPath, args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		if stderr.String() != "" {
+			return nil, errors.New(stderr.String())
+		}
+		return nil, err
+	}
+	var outs []openapipkg.Output
+	err = json.Unmarshal(stdout.Bytes(), &outs)
+	if err != nil {
+		return nil, err
+	}
+	return outs, nil
+}
+
 func (f *CLIFacade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
 	args := []string{
 		"gen",
