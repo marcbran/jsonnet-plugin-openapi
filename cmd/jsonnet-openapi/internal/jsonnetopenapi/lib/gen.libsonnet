@@ -1,5 +1,6 @@
 function(api)
   local j = import 'jsonnet/main.libsonnet';
+  local spec = api.spec;
 
   local le = j.Fodder.LineEnd();
 
@@ -55,7 +56,7 @@ function(api)
     if isJsonnetIdent(name) && !isJsonnetKeyword(name) then name
     else 'p_' + std.md5(name);
 
-  local hasLeaf(node) = std.get(node, 'leaf', null) != null;
+  local hasOperation(node) = std.get(node, 'operation', null) != null;
   local childrenOf(node) = std.get(node, 'children', {});
   local hasChildren(node) =
     local ch = childrenOf(node);
@@ -122,18 +123,15 @@ function(api)
     j.Function(
       [j.Parameter('args')],
       j.Apply(
-        j.Apply(
-          j.Member(j.Var('std'), 'native'),
-          [j.String('invoke:' + api.service)]
-        ),
+        j.Apply(j.Member(j.Var('std'), 'native'), [j.String('invoke:' + api.service)]),
         [j.String('request'), j.Array([inputObject(op)]).closeFodder(le)]
       )
     );
 
   local leafAsGet(node) =
-    j.Object([j.Field('get', opFunction(node.leaf))]).closeFodder(le);
+    j.Object([j.Field('get', opFunction(node.operation))]).closeFodder(le);
 
-  local trieField(k, expr) =
+  local pathField(k, expr) =
     local inner = pathParamInner(k);
     if inner != null then
       local pv = mangledPathVar(inner);
@@ -142,8 +140,8 @@ function(api)
     else
       objectField(k, expr);
 
-  local trieToExpr(node) =
-    if hasLeaf(node) && !hasChildren(node) then leafAsGet(node)
+  local pathNodeToExpr(node) =
+    if hasOperation(node) && !hasChildren(node) then leafAsGet(node)
     else if hasChildren(node) then
       local ch = childrenOf(node);
       local otherKeys = [k for k in std.sort(std.objectFields(ch)) if k != '_'];
@@ -151,27 +149,27 @@ function(api)
         if std.objectHas(ch, '_') then
           [objectField(
             if std.objectHas(ch, 'get') then '_get' else 'get',
-            opFunction(ch['_'].leaf)
+            opFunction(ch['_'].operation)
           )]
         else [];
-      j.Object(underscoreField + [trieField(k, trieToExpr(ch[k])) for k in otherKeys]).closeFodder(le)
-    else error 'invalid trie node';
+      j.Object(underscoreField + [pathField(k, pathNodeToExpr(ch[k])) for k in otherKeys]).closeFodder(le)
+    else error 'invalid path node';
 
-  local pkg(meta) =
+  local pkg() =
     j.Local(
       j.LocalBind('p', j.Import('pkg/main.libsonnet')),
       j.Apply(j.Member(j.Var('p'), 'pkg'), [
         j.Object([
-          j.Field('repo', j.String(meta.pkgRepo)),
-          j.Field('branch', j.String('openapi/%s' % meta.service)),
-          j.Field('path', j.String('openapi-%s' % meta.service)),
-          j.Field('target', j.String(meta.service)),
+          j.Field('repo', j.String(api.pkgRepo)),
+          j.Field('branch', j.String('openapi/%s' % api.service)),
+          j.Field('path', j.String('openapi-%s' % api.service)),
+          j.Field('target', j.String(api.service)),
         ]).closeFodder(le),
-        j.String('%s %s' % [std.get(meta.info, 'title', ''), std.get(meta.info, 'version', '')]),
+        j.String('%s %s' % [std.get(spec, 'title', ''), std.get(spec, 'version', '')]),
       ]).fodder(le)
     );
 
   {
-    'main.libsonnet': j.manifestJsonnet(trieToExpr(api.trie)),
-    'pkg.libsonnet': j.manifestJsonnet(pkg(api)),
+    'main.libsonnet': j.manifestJsonnet(pathNodeToExpr(spec.paths)),
+    'pkg.libsonnet': j.manifestJsonnet(pkg()),
   }

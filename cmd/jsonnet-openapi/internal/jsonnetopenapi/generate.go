@@ -36,12 +36,15 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	payload, err := BuildPayload(api, in.Service, in.Spec)
+	nested, err := BuildNestedSpec(api)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	payload.PkgRepo = in.PkgRepo
-	err = writeGeneratedLibsonnet(in.OutDir, payload)
+	service, err := ResolveServiceName(in.Service, api.Title, in.Spec)
+	if err != nil {
+		return openapipkg.Output{}, err
+	}
+	err = writeGeneratedLibsonnet(in.OutDir, nested, service, in.PkgRepo)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}

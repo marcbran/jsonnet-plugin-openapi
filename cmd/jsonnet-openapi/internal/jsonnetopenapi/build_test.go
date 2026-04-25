@@ -6,32 +6,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildPayload(t *testing.T) {
-	leaf := func(id, pathTmpl, pathFmt string, pargs []string, qp, hp []ParamSpec) *GenOperation {
+func TestBuildNestedSpec(t *testing.T) {
+	leaf := func(id, pathTmpl, pathFmt string, pargs []string, qp, hp []ParameterSpec) *OperationSpec {
 		if pargs == nil {
 			pargs = []string{}
 		}
 		if qp == nil {
-			qp = []ParamSpec{}
+			qp = []ParameterSpec{}
 		}
 		if hp == nil {
-			hp = []ParamSpec{}
+			hp = []ParameterSpec{}
 		}
-		return &GenOperation{
+		return &OperationSpec{
 			ID: id, PathTemplate: pathTmpl, PathFormat: pathFmt,
 			PathArgNames: pargs, QueryParams: qp, HeaderParams: hp,
 		}
 	}
-	trieLeaf := func(op *GenOperation) *TrieNode {
-		return &TrieNode{Leaf: op, Children: map[string]*TrieNode{}}
+	pathLeaf := func(op *OperationSpec) *PathNode {
+		return &PathNode{Operation: op, Children: map[string]*PathNode{}}
 	}
 	tests := []struct {
-		name        string
-		api         APISpec
-		override    string
-		hint        string
-		wantErr     string
-		wantPayload *GenPayload
+		name     string
+		api      APISpec
+		wantErr  string
+		wantSpec *NestedSpec
 	}{
 		{
 			name:    "no GET operations",
@@ -49,83 +47,14 @@ func TestBuildPayload(t *testing.T) {
 			wantErr: "duplicate GET",
 		},
 		{
-			name:     "service override wins over title",
-			api:      APISpec{Title: "Nice Title", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
-			override: "override-slug",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "Nice Title", Version: ""},
-				Service: "override-slug",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"p": trieLeaf(leaf("op", "/p", "/p", []string{}, nil, nil)),
-					},
-				},
-			},
-		},
-		{
-			name: "service slugified from title",
-			api:  APISpec{Title: "My API", Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "My API", Version: ""},
-				Service: "my-api",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"a": trieLeaf(leaf("x", "/a", "/a", []string{}, nil, nil)),
-					},
-				},
-			},
-		},
-		{
-			name: "service from file path hint when title empty",
-			api:  APISpec{Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
-			hint: "/var/app/openapi.yaml",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "openapi",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"a": trieLeaf(leaf("x", "/a", "/a", []string{}, nil, nil)),
-					},
-				},
-			},
-		},
-		{
-			name: "service from URL path hint when title empty",
-			api:  APISpec{Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
-			hint: "https://example.com/v1/spec.json",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "spec",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"a": trieLeaf(leaf("x", "/a", "/a", []string{}, nil, nil)),
-					},
-				},
-			},
-		},
-		{
-			name:    "cannot derive service without title path or override",
-			api:     APISpec{Paths: []PathItem{{Path: "/", Get: &Operation{OperationID: "root"}}}},
-			wantErr: "cannot derive service",
-		},
-		{
-			name:     "service override unusable after sanitization",
-			api:      APISpec{Title: "T", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
-			override: "@@@",
-			wantErr:  "sanitization",
-		},
-		{
-			name: "service from title starting with digit is prefixed",
-			api: APISpec{
-				Title: "123-api",
-				Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}},
-			},
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "123-api", Version: ""},
-				Service: "s-123-api",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"a": trieLeaf(leaf("x", "/a", "/a", []string{}, nil, nil)),
+			name: "title and version passed through",
+			api:  APISpec{Title: "Nice Title", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
+			wantSpec: &NestedSpec{
+				Title: "Nice Title",
+				Version: "",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
+						"p": pathLeaf(leaf("op", "/p", "/p", []string{}, nil, nil)),
 					},
 				},
 			},
@@ -136,13 +65,12 @@ func TestBuildPayload(t *testing.T) {
 				Title: "T", Version: "2.0",
 				Paths: []PathItem{{Path: "/z", Get: &Operation{OperationID: "z"}}},
 			},
-			override: "svc",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "T", Version: "2.0"},
-				Service: "svc",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"z": trieLeaf(leaf("z", "/z", "/z", []string{}, nil, nil)),
+			wantSpec: &NestedSpec{
+				Title:   "T",
+				Version: "2.0",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
+						"z": pathLeaf(leaf("z", "/z", "/z", []string{}, nil, nil)),
 					},
 				},
 			},
@@ -152,15 +80,14 @@ func TestBuildPayload(t *testing.T) {
 			api: APISpec{
 				Paths: []PathItem{{Path: "/foo/bar", Get: &Operation{OperationID: ""}}},
 			},
-			override: "s",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "s",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
+			wantSpec: &NestedSpec{
+				Title:   "",
+				Version: "",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
 						"foo": {
-							Children: map[string]*TrieNode{
-								"bar": trieLeaf(leaf("get_foo-bar", "/foo/bar", "/foo/bar", []string{}, nil, nil)),
+							Children: map[string]*PathNode{
+								"bar": pathLeaf(leaf("get_foo-bar", "/foo/bar", "/foo/bar", []string{}, nil, nil)),
 							},
 						},
 					},
@@ -178,19 +105,18 @@ func TestBuildPayload(t *testing.T) {
 					}},
 				}},
 			},
-			override: "s",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "s",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"q": trieLeaf(&GenOperation{
+			wantSpec: &NestedSpec{
+				Title:   "",
+				Version: "",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
+						"q": pathLeaf(&OperationSpec{
 							ID:           "get_q",
 							PathTemplate: "/q",
 							PathFormat:   "/q",
 							PathArgNames: []string{},
-							QueryParams:  []ParamSpec{{Name: "q", Required: false}},
-							HeaderParams: []ParamSpec{{Name: "X-Trace", Required: true}},
+							QueryParams:  []ParameterSpec{{Name: "q", Required: false}},
+							HeaderParams: []ParameterSpec{{Name: "X-Trace", Required: true}},
 						}),
 					},
 				},
@@ -210,16 +136,15 @@ func TestBuildPayload(t *testing.T) {
 					},
 				},
 			},
-			override: "mysvc",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "mysvc",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
+			wantSpec: &NestedSpec{
+				Title:   "",
+				Version: "",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
 						"r": {
-							Children: map[string]*TrieNode{
-								"_": {Leaf: leaf("one", "/r", "/r", []string{}, nil, nil)},
-								"{id}": trieLeaf(leaf("two", "/r/{id}", "/r/%s", []string{"id"}, nil, nil)),
+							Children: map[string]*PathNode{
+								"_": {Operation: leaf("one", "/r", "/r", []string{}, nil, nil)},
+								"{id}": pathLeaf(leaf("two", "/r/{id}", "/r/%s", []string{"id"}, nil, nil)),
 							},
 						},
 					},
@@ -241,19 +166,18 @@ func TestBuildPayload(t *testing.T) {
 					},
 				}},
 			},
-			override: "s",
-			wantPayload: &GenPayload{
-				Info:    GenInfo{Title: "", Version: ""},
-				Service: "s",
-				Trie: &TrieNode{
-					Children: map[string]*TrieNode{
-						"q": trieLeaf(&GenOperation{
+			wantSpec: &NestedSpec{
+				Title:   "",
+				Version: "",
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
+						"q": pathLeaf(&OperationSpec{
 							ID:           "get_q",
 							PathTemplate: "/q",
 							PathFormat:   "/q",
 							PathArgNames: []string{},
-							QueryParams:  []ParamSpec{{Name: "q", Required: true}},
-							HeaderParams: []ParamSpec{},
+							QueryParams:  []ParameterSpec{{Name: "q", Required: true}},
+							HeaderParams: []ParameterSpec{},
 						}),
 					},
 				},
@@ -262,14 +186,45 @@ func TestBuildPayload(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BuildPayload(tt.api, tt.override, tt.hint)
+			got, err := BuildNestedSpec(tt.api)
+			if tt.wantErr != "" {
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tt.wantErr)
+			return
+		}
+		require.NoError(t, err)
+		require.Equal(t, tt.wantSpec, got)
+	})
+	}
+}
+
+func TestResolveServiceName(t *testing.T) {
+	tests := []struct {
+		name     string
+		override string
+		title    string
+		hint     string
+		want     string
+		wantErr  string
+	}{
+		{name: "service override wins over title", override: "override-slug", title: "Nice Title", want: "override-slug"},
+		{name: "service slugified from title", title: "My API", want: "my-api"},
+		{name: "service from file path hint when title empty", hint: "/var/app/openapi.yaml", want: "openapi"},
+		{name: "service from URL path hint when title empty", hint: "https://example.com/v1/spec.json", want: "spec"},
+		{name: "cannot derive service without title path or override", wantErr: "cannot derive service"},
+		{name: "service override unusable after sanitization", override: "@@@", title: "T", wantErr: "sanitization"},
+		{name: "service from title starting with digit is prefixed", title: "123-api", want: "s-123-api"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ResolveServiceName(tt.override, tt.title, tt.hint)
 			if tt.wantErr != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tt.wantErr)
 				return
 			}
 			require.NoError(t, err)
-			require.Equal(t, tt.wantPayload, got)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
