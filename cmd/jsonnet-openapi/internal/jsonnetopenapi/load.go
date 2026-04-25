@@ -7,13 +7,18 @@ type OpenAPILoader interface {
 }
 
 type APISpec struct {
-	Title         string
-	Version       string
-	GETOperations []GETOperation
+	Title   string
+	Version string
+	Paths   []PathItem
 }
 
-type GETOperation struct {
-	Path        string
+type PathItem struct {
+	Path       string
+	Parameters []Parameter
+	Get        *Operation
+}
+
+type Operation struct {
 	OperationID string
 	Parameters  []Parameter
 }

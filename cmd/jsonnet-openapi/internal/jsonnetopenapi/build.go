@@ -14,12 +14,12 @@ import (
 var pathTplVar = regexp.MustCompile(`\{([^}]+)}`)
 
 func BuildPayload(api APISpec, serviceOverride string, sourceHint string) (*GenPayload, error) {
-	api.GETOperations = normalizeGETOperations(api.GETOperations)
 	title := api.Title
 	version := api.Version
 	root := &TrieNode{}
+	ops := collectGETOperations(api.Paths)
 	count := 0
-	for _, op := range api.GETOperations {
+	for _, op := range ops {
 		geo, err := operationFromGET(op)
 		if err != nil {
 			return nil, err
@@ -48,11 +48,38 @@ func BuildPayload(api APISpec, serviceOverride string, sourceHint string) (*GenP
 	}, nil
 }
 
-func normalizeGETOperations(ops []GETOperation) []GETOperation {
-	out := make([]GETOperation, len(ops))
-	for i := range ops {
-		out[i] = ops[i]
-		out[i].Parameters = canonicalizeParameters(ops[i].Parameters)
+func collectGETOperations(paths []PathItem) []GETOperation {
+	out := make([]GETOperation, 0, len(paths))
+	for _, p := range paths {
+		if p.Get == nil {
+			continue
+		}
+		out = append(out, GETOperation{
+			Path:        p.Path,
+			OperationID: p.Get.OperationID,
+			Parameters:  canonicalizeParameters(mergeParameters(p.Parameters, p.Get.Parameters)),
+		})
+	}
+	return out
+}
+
+type GETOperation struct {
+	Path        string
+	OperationID string
+	Parameters  []Parameter
+}
+
+func mergeParameters(pathParams, opParams []Parameter) []Parameter {
+	byKey := make(map[string]Parameter, len(pathParams)+len(opParams))
+	for _, p := range pathParams {
+		byKey[p.In+":"+p.Name] = p
+	}
+	for _, p := range opParams {
+		byKey[p.In+":"+p.Name] = p
+	}
+	out := make([]Parameter, 0, len(byKey))
+	for _, p := range byKey {
+		out = append(out, p)
 	}
 	return out
 }

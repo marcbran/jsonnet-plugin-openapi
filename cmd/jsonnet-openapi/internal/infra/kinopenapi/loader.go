@@ -63,48 +63,42 @@ func mapDocument(doc *openapi3.T) (jsonnetopenapi.APISpec, error) {
 		if item == nil || item.Get == nil {
 			continue
 		}
-		params := mergeParameters(item, item.Get)
-		domainParams := make([]jsonnetopenapi.Parameter, 0, len(params))
-		for _, p := range params {
+		pathParams := make([]jsonnetopenapi.Parameter, 0, len(item.Parameters))
+		for _, p := range item.Parameters {
 			if p == nil {
 				continue
 			}
-			domainParams = append(domainParams, jsonnetopenapi.Parameter{
-				Name:     p.Name,
-				In:       string(p.In),
-				Required: p.Required,
+			if p.Value == nil {
+				continue
+			}
+			pathParams = append(pathParams, jsonnetopenapi.Parameter{
+				Name:     p.Value.Name,
+				In:       string(p.Value.In),
+				Required: p.Value.Required,
 			})
 		}
-		api.GETOperations = append(api.GETOperations, jsonnetopenapi.GETOperation{
-			Path:        path,
-			OperationID: item.Get.OperationID,
-			Parameters:  domainParams,
+		getParams := make([]jsonnetopenapi.Parameter, 0, len(item.Get.Parameters))
+		for _, p := range item.Get.Parameters {
+			if p == nil {
+				continue
+			}
+			if p.Value == nil {
+				continue
+			}
+			getParams = append(getParams, jsonnetopenapi.Parameter{
+				Name:     p.Value.Name,
+				In:       string(p.Value.In),
+				Required: p.Value.Required,
+			})
+		}
+		api.Paths = append(api.Paths, jsonnetopenapi.PathItem{
+			Path:       path,
+			Parameters: pathParams,
+			Get: &jsonnetopenapi.Operation{
+				OperationID: item.Get.OperationID,
+				Parameters:  getParams,
+			},
 		})
 	}
 	return api, nil
-}
-
-func mergeParameters(pathItem *openapi3.PathItem, op *openapi3.Operation) []*openapi3.Parameter {
-	byKey := map[string]*openapi3.Parameter{}
-	add := func(refs openapi3.Parameters) {
-		for _, ref := range refs {
-			if ref == nil || ref.Value == nil {
-				continue
-			}
-			p := ref.Value
-			k := p.In + ":" + p.Name
-			byKey[k] = p
-		}
-	}
-	if pathItem != nil {
-		add(pathItem.Parameters)
-	}
-	if op != nil {
-		add(op.Parameters)
-	}
-	out := make([]*openapi3.Parameter, 0, len(byKey))
-	for _, p := range byKey {
-		out = append(out, p)
-	}
-	return out
 }

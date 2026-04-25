@@ -41,16 +41,16 @@ func TestBuildPayload(t *testing.T) {
 		{
 			name: "duplicate GET for same path",
 			api: APISpec{
-				GETOperations: []GETOperation{
-					{Path: "/x", OperationID: "a"},
-					{Path: "/x", OperationID: "b"},
+				Paths: []PathItem{
+					{Path: "/x", Get: &Operation{OperationID: "a"}},
+					{Path: "/x", Get: &Operation{OperationID: "b"}},
 				},
 			},
 			wantErr: "duplicate GET",
 		},
 		{
 			name:     "service override wins over title",
-			api:      APISpec{Title: "Nice Title", GETOperations: []GETOperation{{Path: "/p", OperationID: "op"}}},
+			api:      APISpec{Title: "Nice Title", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
 			override: "override-slug",
 			wantPayload: &GenPayload{
 				Info:    GenInfo{Title: "Nice Title", Version: ""},
@@ -64,7 +64,7 @@ func TestBuildPayload(t *testing.T) {
 		},
 		{
 			name: "service slugified from title",
-			api:  APISpec{Title: "My API", GETOperations: []GETOperation{{Path: "/a", OperationID: "x"}}},
+			api:  APISpec{Title: "My API", Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
 			wantPayload: &GenPayload{
 				Info:    GenInfo{Title: "My API", Version: ""},
 				Service: "my-api",
@@ -77,7 +77,7 @@ func TestBuildPayload(t *testing.T) {
 		},
 		{
 			name: "service from file path hint when title empty",
-			api:  APISpec{GETOperations: []GETOperation{{Path: "/a", OperationID: "x"}}},
+			api:  APISpec{Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
 			hint: "/var/app/openapi.yaml",
 			wantPayload: &GenPayload{
 				Info:    GenInfo{Title: "", Version: ""},
@@ -91,7 +91,7 @@ func TestBuildPayload(t *testing.T) {
 		},
 		{
 			name: "service from URL path hint when title empty",
-			api:  APISpec{GETOperations: []GETOperation{{Path: "/a", OperationID: "x"}}},
+			api:  APISpec{Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}}},
 			hint: "https://example.com/v1/spec.json",
 			wantPayload: &GenPayload{
 				Info:    GenInfo{Title: "", Version: ""},
@@ -105,20 +105,20 @@ func TestBuildPayload(t *testing.T) {
 		},
 		{
 			name:    "cannot derive service without title path or override",
-			api:     APISpec{GETOperations: []GETOperation{{Path: "/", OperationID: "root"}}},
+			api:     APISpec{Paths: []PathItem{{Path: "/", Get: &Operation{OperationID: "root"}}}},
 			wantErr: "cannot derive service",
 		},
 		{
 			name:     "service override unusable after sanitization",
-			api:      APISpec{Title: "T", GETOperations: []GETOperation{{Path: "/p", OperationID: "op"}}},
+			api:      APISpec{Title: "T", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
 			override: "@@@",
 			wantErr:  "sanitization",
 		},
 		{
 			name: "service from title starting with digit is prefixed",
 			api: APISpec{
-				Title:         "123-api",
-				GETOperations: []GETOperation{{Path: "/a", OperationID: "x"}},
+				Title: "123-api",
+				Paths: []PathItem{{Path: "/a", Get: &Operation{OperationID: "x"}}},
 			},
 			wantPayload: &GenPayload{
 				Info:    GenInfo{Title: "123-api", Version: ""},
@@ -134,7 +134,7 @@ func TestBuildPayload(t *testing.T) {
 			name: "info version passed through",
 			api: APISpec{
 				Title: "T", Version: "2.0",
-				GETOperations: []GETOperation{{Path: "/z", OperationID: "z"}},
+				Paths: []PathItem{{Path: "/z", Get: &Operation{OperationID: "z"}}},
 			},
 			override: "svc",
 			wantPayload: &GenPayload{
@@ -150,7 +150,7 @@ func TestBuildPayload(t *testing.T) {
 		{
 			name: "operation id derived from path when missing",
 			api: APISpec{
-				GETOperations: []GETOperation{{Path: "/foo/bar", OperationID: ""}},
+				Paths: []PathItem{{Path: "/foo/bar", Get: &Operation{OperationID: ""}}},
 			},
 			override: "s",
 			wantPayload: &GenPayload{
@@ -170,12 +170,12 @@ func TestBuildPayload(t *testing.T) {
 		{
 			name: "query and header parameters",
 			api: APISpec{
-				GETOperations: []GETOperation{{
+				Paths: []PathItem{{
 					Path: "/q",
-					Parameters: []Parameter{
+					Get: &Operation{Parameters: []Parameter{
 						{Name: "q", In: "query", Required: false},
 						{Name: "X-Trace", In: "header", Required: true},
-					},
+					}},
 				}},
 			},
 			override: "s",
@@ -199,11 +199,14 @@ func TestBuildPayload(t *testing.T) {
 		{
 			name: "two GET routes with shared prefix promote static leaf to underscore",
 			api: APISpec{
-				GETOperations: []GETOperation{
-					{Path: "/r", OperationID: "one"},
+				Paths: []PathItem{
+					{Path: "/r", Get: &Operation{OperationID: "one"}},
 					{
-						Path: "/r/{id}", OperationID: "two",
-						Parameters: []Parameter{{Name: "id", In: "path", Required: true}},
+						Path: "/r/{id}",
+						Get: &Operation{
+							OperationID: "two",
+							Parameters:  []Parameter{{Name: "id", In: "path", Required: true}},
+						},
 					},
 				},
 			},
@@ -219,6 +222,39 @@ func TestBuildPayload(t *testing.T) {
 								"{id}": trieLeaf(leaf("two", "/r/{id}", "/r/%s", []string{"id"}, nil, nil)),
 							},
 						},
+					},
+				},
+			},
+		},
+		{
+			name: "operation parameters override path parameters during build",
+			api: APISpec{
+				Paths: []PathItem{{
+					Path: "/q",
+					Parameters: []Parameter{
+						{Name: "q", In: "query", Required: false},
+					},
+					Get: &Operation{
+						Parameters: []Parameter{
+							{Name: "q", In: "query", Required: true},
+						},
+					},
+				}},
+			},
+			override: "s",
+			wantPayload: &GenPayload{
+				Info:    GenInfo{Title: "", Version: ""},
+				Service: "s",
+				Trie: &TrieNode{
+					Children: map[string]*TrieNode{
+						"q": trieLeaf(&GenOperation{
+							ID:           "get_q",
+							PathTemplate: "/q",
+							PathFormat:   "/q",
+							PathArgNames: []string{},
+							QueryParams:  []ParamSpec{{Name: "q", Required: true}},
+							HeaderParams: []ParamSpec{},
+						}),
 					},
 				},
 			},
