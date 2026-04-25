@@ -17,6 +17,21 @@ func NewLoader() *Loader {
 	return &Loader{}
 }
 
+func (l *Loader) Parse(ctx context.Context, spec string) (internalopenapi.APISpec, error) {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.Context = ctx
+	doc, err := loader.LoadFromData([]byte(spec))
+	if err != nil {
+		return internalopenapi.APISpec{}, err
+	}
+	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
+	if err != nil {
+		return internalopenapi.APISpec{}, err
+	}
+	return mapDocument(doc)
+}
+
 func (l *Loader) Load(ctx context.Context, ref string) (internalopenapi.APISpec, error) {
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true

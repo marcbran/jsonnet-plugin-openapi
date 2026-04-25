@@ -1,0 +1,34 @@
+{
+  "paths": {
+    "children": {
+      "users": {
+        "children": {
+          "_": {
+            "operation": {
+              "headerParams": [],
+              "id": "listUsers",
+              "pathArgNames": [],
+              "pathFormat": "/users",
+              "pathTemplate": "/users",
+              "queryParams": []
+            }
+          },
+          "{userId}": {
+            "operation": {
+              "headerParams": [],
+              "id": "getUser",
+              "pathArgNames": [
+                "userId"
+              ],
+              "pathFormat": "/users/%s",
+              "pathTemplate": "/users/{userId}",
+              "queryParams": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "title": "Minimal",
+  "version": "1"
+}

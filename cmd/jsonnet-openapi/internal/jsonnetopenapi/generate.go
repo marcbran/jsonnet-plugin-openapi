@@ -33,7 +33,7 @@ func (g *facade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]openapip
 }
 
 func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
-	api, err := g.loader.Load(ctx, in.Spec)
+	api, err := g.loader.Load(ctx, in.Ref)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
@@ -45,7 +45,7 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	service, err := internalopenapi.ResolveServiceName(in.Service, api.Title, in.Spec)
+	service, err := internalopenapi.ResolveServiceName(in.Service, api.Title, in.Ref)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}

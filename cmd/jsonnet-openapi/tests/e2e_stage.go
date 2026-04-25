@@ -16,7 +16,7 @@ type Stage struct {
 
 	tempDir  string
 	outDir   string
-	specPath string
+	ref      string
 	service  string
 
 	lastOutput openapipkg.Output

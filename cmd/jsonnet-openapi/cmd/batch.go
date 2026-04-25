@@ -50,8 +50,8 @@ func runBatch(cmd *cobra.Command, args []string) error {
 
 	configDir := filepath.Dir(configPath)
 	for i := range jobs {
-		if jobs[i].Spec != "" && !filepath.IsAbs(jobs[i].Spec) {
-			jobs[i].Spec = filepath.Join(configDir, jobs[i].Spec)
+		if jobs[i].Ref != "" && !filepath.IsAbs(jobs[i].Ref) {
+			jobs[i].Ref = filepath.Join(configDir, jobs[i].Ref)
 		}
 		outDir := jobs[i].OutDir
 		if outDir == "" {

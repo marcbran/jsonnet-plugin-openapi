@@ -60,7 +60,7 @@ func runGen(cmd *cobra.Command, args []string) error {
 
 	g := jnogen.NewFacade(kinopenapi.NewLoader())
 	out, err := g.Generate(cmd.Context(), jsonnetopenapi.Input{
-		Spec:    args[0],
+		Ref:     args[0],
 		OutDir:  outDir,
 		Service: service,
 		PkgRepo: pkgRepo,

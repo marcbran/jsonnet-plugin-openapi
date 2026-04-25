@@ -3,7 +3,7 @@ package jsonnetopenapi
 import "context"
 
 type Input struct {
-	Spec    string `json:"spec"`
+	Ref     string `json:"ref"`
 	OutDir  string `json:"outDir"`
 	Service string `json:"service,omitempty"`
 	PkgRepo string `json:"pkgRepo,omitempty"`

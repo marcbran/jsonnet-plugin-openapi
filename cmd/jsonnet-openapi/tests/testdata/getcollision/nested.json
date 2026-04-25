@@ -1,0 +1,44 @@
+{
+  "paths": {
+    "children": {
+      "r": {
+        "children": {
+          "_": {
+            "operation": {
+              "headerParams": [],
+              "id": "listR",
+              "pathArgNames": [],
+              "pathFormat": "/r",
+              "pathTemplate": "/r",
+              "queryParams": []
+            }
+          },
+          "get": {
+            "operation": {
+              "headerParams": [],
+              "id": "literalGet",
+              "pathArgNames": [],
+              "pathFormat": "/r/get",
+              "pathTemplate": "/r/get",
+              "queryParams": []
+            }
+          },
+          "{id}": {
+            "operation": {
+              "headerParams": [],
+              "id": "getById",
+              "pathArgNames": [
+                "id"
+              ],
+              "pathFormat": "/r/%s",
+              "pathTemplate": "/r/{id}",
+              "queryParams": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "title": "Get collision",
+  "version": "1"
+}

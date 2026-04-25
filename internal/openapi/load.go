@@ -6,25 +6,29 @@ type Loader interface {
 	Load(ctx context.Context, ref string) (APISpec, error)
 }
 
+type Parser interface {
+	Parse(ctx context.Context, spec string) (APISpec, error)
+}
+
 type APISpec struct {
-	Title   string
-	Version string
-	Paths   []PathItem
+	Title   string     `json:"title"`
+	Version string     `json:"version"`
+	Paths   []PathItem `json:"paths"`
 }
 
 type PathItem struct {
-	Path       string
-	Parameters []Parameter
-	Get        *Operation
+	Path       string      `json:"path"`
+	Parameters []Parameter `json:"parameters,omitempty"`
+	Get        *Operation  `json:"get,omitempty"`
 }
 
 type Operation struct {
-	OperationID string
-	Parameters  []Parameter
+	OperationID string      `json:"operationId"`
+	Parameters  []Parameter `json:"parameters,omitempty"`
 }
 
 type Parameter struct {
-	Name     string
-	In       string
-	Required bool
+	Name     string `json:"name"`
+	In       string `json:"in"`
+	Required bool   `json:"required"`
 }

@@ -1,0 +1,25 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "listUsers"
+      },
+      "path": "/users"
+    },
+    {
+      "get": {
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true
+          }
+        ]
+      },
+      "path": "/users/{userId}"
+    }
+  ],
+  "title": "Minimal",
+  "version": "1"
+}

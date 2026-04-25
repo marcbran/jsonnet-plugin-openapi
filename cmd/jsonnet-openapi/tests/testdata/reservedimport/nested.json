@@ -1,0 +1,18 @@
+{
+  "paths": {
+    "children": {
+      "import": {
+        "operation": {
+          "headerParams": [],
+          "id": "getImportRoot",
+          "pathArgNames": [],
+          "pathFormat": "/import",
+          "pathTemplate": "/import",
+          "queryParams": []
+        }
+      }
+    }
+  },
+  "title": "Reserved import path segment",
+  "version": "1"
+}

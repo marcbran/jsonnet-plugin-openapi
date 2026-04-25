@@ -1,0 +1,18 @@
+{
+  "paths": {
+    "children": {
+      "users": {
+        "operation": {
+          "headerParams": [],
+          "id": "listUsers",
+          "pathArgNames": [],
+          "pathFormat": "/users",
+          "pathTemplate": "/users",
+          "queryParams": []
+        }
+      }
+    }
+  },
+  "title": "One",
+  "version": "1"
+}

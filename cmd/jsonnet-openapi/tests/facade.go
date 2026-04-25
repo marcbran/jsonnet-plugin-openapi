@@ -81,7 +81,7 @@ func (f *CLIFacade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]opena
 func (f *CLIFacade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
 	args := []string{
 		"gen",
-		in.Spec,
+		in.Ref,
 		"--out",
 		in.OutDir,
 		"--format",

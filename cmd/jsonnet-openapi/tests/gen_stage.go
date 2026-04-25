@@ -32,7 +32,7 @@ func testdataRoot() string {
 }
 
 func (s *Stage) a_spec(name string) *Stage {
-	s.specPath = filepath.Join(testdataRoot(), name+".yaml")
+	s.ref = filepath.Join(testdataRoot(), name+".yaml")
 	return s
 }
 
@@ -108,16 +108,16 @@ func (s *Stage) a_docker_container(image string, internalPort int) *Stage {
 
 func (s *Stage) a_spec_url(url string) *Stage {
 	if s.liveHTTPOrigin != "" && strings.HasPrefix(url, "/") {
-		s.specPath = strings.TrimSuffix(s.liveHTTPOrigin, "/") + url
+		s.ref = strings.TrimSuffix(s.liveHTTPOrigin, "/") + url
 		return s
 	}
-	s.specPath = url
+	s.ref = url
 	return s
 }
 
 func (s *Stage) the_gen_command_is_run() *Stage {
 	out, err := s.facade.Generate(context.Background(), openapipkg.Input{
-		Spec:    s.specPath,
+		Ref:     s.ref,
 		OutDir:  s.outDir,
 		Service: s.service,
 		PkgRepo: "git@github.com:marcbran/jsonnet.git",

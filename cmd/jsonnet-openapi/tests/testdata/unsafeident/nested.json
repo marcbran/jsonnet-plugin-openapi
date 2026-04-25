@@ -1,0 +1,23 @@
+{
+  "paths": {
+    "children": {
+      "user-profiles": {
+        "operation": {
+          "headerParams": [
+            {
+              "name": "X-Trace-Id",
+              "required": false
+            }
+          ],
+          "id": "listUserProfiles",
+          "pathArgNames": [],
+          "pathFormat": "/user-profiles",
+          "pathTemplate": "/user-profiles",
+          "queryParams": []
+        }
+      }
+    }
+  },
+  "title": "Unsafe Jsonnet identifiers",
+  "version": "1"
+}
