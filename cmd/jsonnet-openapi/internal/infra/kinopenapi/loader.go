@@ -2,7 +2,6 @@ package kinopenapi
 
 import (
 	"context"
-	"encoding/json"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -18,7 +17,7 @@ func NewLoader() *Loader {
 	return &Loader{}
 }
 
-func (l *Loader) Load(ctx context.Context, ref string) (jsonnetopenapi.LoadedSpec, error) {
+func (l *Loader) Load(ctx context.Context, ref string) (jsonnetopenapi.APISpec, error) {
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
 	loader.Context = ctx
@@ -27,35 +26,28 @@ func (l *Loader) Load(ctx context.Context, ref string) (jsonnetopenapi.LoadedSpe
 	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") {
 		u, perr := url.Parse(ref)
 		if perr != nil {
-			return jsonnetopenapi.LoadedSpec{}, perr
+			return jsonnetopenapi.APISpec{}, perr
 		}
 		doc, err = loader.LoadFromURI(u)
 	} else {
 		abs, perr := filepath.Abs(ref)
 		if perr != nil {
-			return jsonnetopenapi.LoadedSpec{}, perr
+			return jsonnetopenapi.APISpec{}, perr
 		}
 		doc, err = loader.LoadFromFile(abs)
 	}
 	if err != nil {
-		return jsonnetopenapi.LoadedSpec{}, err
+		return jsonnetopenapi.APISpec{}, err
 	}
 	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
-		return jsonnetopenapi.LoadedSpec{}, err
-	}
-	resolved, err := json.MarshalIndent(doc, "", "  ")
-	if err != nil {
-		return jsonnetopenapi.LoadedSpec{}, err
+		return jsonnetopenapi.APISpec{}, err
 	}
 	api, err := mapDocument(doc)
 	if err != nil {
-		return jsonnetopenapi.LoadedSpec{}, err
+		return jsonnetopenapi.APISpec{}, err
 	}
-	return jsonnetopenapi.LoadedSpec{
-		API:          api,
-		ResolvedJSON: resolved,
-	}, nil
+	return api, nil
 }
 
 func mapDocument(doc *openapi3.T) (jsonnetopenapi.APISpec, error) {

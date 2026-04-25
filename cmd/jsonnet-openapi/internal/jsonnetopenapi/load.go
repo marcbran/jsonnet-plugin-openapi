@@ -3,12 +3,7 @@ package jsonnetopenapi
 import "context"
 
 type OpenAPILoader interface {
-	Load(ctx context.Context, ref string) (LoadedSpec, error)
-}
-
-type LoadedSpec struct {
-	API          APISpec
-	ResolvedJSON []byte
+	Load(ctx context.Context, ref string) (APISpec, error)
 }
 
 type APISpec struct {

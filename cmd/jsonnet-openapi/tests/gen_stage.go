@@ -139,7 +139,7 @@ func (s *Stage) the_gen_has_no_error() *Stage {
 
 func (s *Stage) the_generated_files_match(name string) *Stage {
 	expectedDir := filepath.Join(testdataRoot(), name)
-	names := []string{"openapi.resolved.json", "main.libsonnet", "pkg.libsonnet"}
+	names := []string{"main.libsonnet", "pkg.libsonnet"}
 	for _, fname := range names {
 		gotPath := filepath.Join(s.outDir, fname)
 		wantPath := filepath.Join(expectedDir, fname)

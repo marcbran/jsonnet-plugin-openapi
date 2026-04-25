@@ -3,12 +3,9 @@ package jsonnetopenapi
 import (
 	"context"
 	"os"
-	"path/filepath"
 
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 )
-
-const resolvedSpecFile = "openapi.resolved.json"
 
 type facade struct {
 	loader OpenAPILoader
@@ -31,7 +28,7 @@ func (g *facade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]openapip
 }
 
 func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
-	ls, err := g.loader.Load(ctx, in.Spec)
+	api, err := g.loader.Load(ctx, in.Spec)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
@@ -39,12 +36,7 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	resPath := filepath.Join(in.OutDir, resolvedSpecFile)
-	err = os.WriteFile(resPath, ls.ResolvedJSON, 0666)
-	if err != nil {
-		return openapipkg.Output{}, err
-	}
-	payload, err := BuildPayload(ls.API, in.Service, in.Spec)
+	payload, err := BuildPayload(api, in.Service, in.Spec)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
@@ -56,7 +48,6 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	return openapipkg.Output{
 		OutDir: in.OutDir,
 		Files: []string{
-			resolvedSpecFile,
 			"main.libsonnet",
 			"pkg.libsonnet",
 		},
