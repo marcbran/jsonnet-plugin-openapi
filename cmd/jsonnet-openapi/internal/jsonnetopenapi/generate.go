@@ -2,16 +2,21 @@ package jsonnetopenapi
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 
+	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
+	"github.com/marcbran/jpoet/pkg/jpoet"
+	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 )
 
 type facade struct {
-	loader OpenAPILoader
+	loader internalopenapi.Loader
 }
 
-func NewFacade(loader OpenAPILoader) openapipkg.Facade {
+func NewFacade(loader internalopenapi.Loader) openapipkg.Facade {
 	return &facade{loader: loader}
 }
 
@@ -36,11 +41,11 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	nested, err := BuildNestedSpec(api)
+	nested, err := internalopenapi.BuildNestedSpec(api)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	service, err := ResolveServiceName(in.Service, api.Title, in.Spec)
+	service, err := internalopenapi.ResolveServiceName(in.Service, api.Title, in.Spec)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
@@ -55,4 +60,35 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 			"pkg.libsonnet",
 		},
 	}, nil
+}
+
+func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
+	apiJSON, err := json.Marshal(generationInput{
+		Spec:    spec,
+		Service: service,
+		PkgRepo: pkgRepo,
+	})
+	if err != nil {
+		return err
+	}
+	err = jpoet.Eval(
+		jpoet.FileImport([]string{}),
+		jpoet.FSImport(lib),
+		jpoet.FSImport(imports.Fs),
+		jpoet.WithPlugin(jsonnet.Plugin()),
+		jpoet.TLACode("api", string(apiJSON)),
+		jpoet.FileInput("./lib/gen.libsonnet"),
+		jpoet.Serialize(false),
+		jpoet.DirectoryOutput(outDir),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type generationInput struct {
+	Spec    *internalopenapi.NestedSpec `json:"spec"`
+	Service string                      `json:"service"`
+	PkgRepo string                      `json:"pkgRepo"`
 }

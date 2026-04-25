@@ -1,4 +1,4 @@
-package jsonnetopenapi
+package openapi
 
 import (
 	"fmt"

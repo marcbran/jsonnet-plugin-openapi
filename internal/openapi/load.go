@@ -1,8 +1,8 @@
-package jsonnetopenapi
+package openapi
 
 import "context"
 
-type OpenAPILoader interface {
+type Loader interface {
 	Load(ctx context.Context, ref string) (APISpec, error)
 }
 

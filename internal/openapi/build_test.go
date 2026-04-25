@@ -1,4 +1,4 @@
-package jsonnetopenapi
+package openapi
 
 import (
 	"testing"
@@ -50,7 +50,7 @@ func TestBuildNestedSpec(t *testing.T) {
 			name: "title and version passed through",
 			api:  APISpec{Title: "Nice Title", Paths: []PathItem{{Path: "/p", Get: &Operation{OperationID: "op"}}}},
 			wantSpec: &NestedSpec{
-				Title: "Nice Title",
+				Title:   "Nice Title",
 				Version: "",
 				Paths: &PathNode{
 					Children: map[string]*PathNode{
@@ -143,7 +143,7 @@ func TestBuildNestedSpec(t *testing.T) {
 					Children: map[string]*PathNode{
 						"r": {
 							Children: map[string]*PathNode{
-								"_": {Operation: leaf("one", "/r", "/r", []string{}, nil, nil)},
+								"_":    {Operation: leaf("one", "/r", "/r", []string{}, nil, nil)},
 								"{id}": pathLeaf(leaf("two", "/r/{id}", "/r/%s", []string{"id"}, nil, nil)),
 							},
 						},
@@ -188,13 +188,13 @@ func TestBuildNestedSpec(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := BuildNestedSpec(tt.api)
 			if tt.wantErr != "" {
-			require.Error(t, err)
-			require.Contains(t, err.Error(), tt.wantErr)
-			return
-		}
-		require.NoError(t, err)
-		require.Equal(t, tt.wantSpec, got)
-	})
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.wantSpec, got)
+		})
 	}
 }
 
