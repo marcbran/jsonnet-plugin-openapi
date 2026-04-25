@@ -19,7 +19,7 @@ import (
 	"github.com/google/go-jsonnet/formatter"
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
-	openapiplug "github.com/marcbran/jsonnet-plugin-openapi/openapi"
+	openapiplug "github.com/marcbran/jsonnet-plugin-openapi/pkg/openapi"
 	"github.com/stretchr/testify/require"
 )
 

@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/marcbran/jpoet/pkg/jpoet"
-	openapiplugin "github.com/marcbran/jsonnet-plugin-openapi/openapi"
+	openapiplugin "github.com/marcbran/jsonnet-plugin-openapi/pkg/openapi"
 	"github.com/stretchr/testify/require"
 )
 
