@@ -18,8 +18,8 @@ import (
 
 	"github.com/google/go-jsonnet/formatter"
 	"github.com/marcbran/jpoet/pkg/jpoet"
+	pluginhttp "github.com/marcbran/jsonnet-plugin-http/http"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
-	openapiplug "github.com/marcbran/jsonnet-plugin-openapi/pkg/openapi"
 	"github.com/stretchr/testify/require"
 )
 
@@ -167,7 +167,7 @@ func (s *Stage) a_jsonnet_request_is_evaluated(baseURL string, expr string) *Sta
 	snippet := fmt.Sprintf("local %s = import 'main.libsonnet';\n%s", s.service, expr)
 	var out map[string]any
 	s.evalErr = jpoet.Eval(
-		jpoet.WithPlugin(openapiplug.Plugin(s.service, openapiplug.WithBaseURL(baseURL))),
+		jpoet.WithPlugin(pluginhttp.Plugin(s.service, pluginhttp.WithBaseURL(baseURL))),
 		jpoet.FileImport([]string{s.outDir}),
 		jpoet.SnippetInput("eval.jsonnet", snippet),
 		jpoet.ValueOutput(&out),
