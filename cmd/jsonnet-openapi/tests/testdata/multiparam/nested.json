@@ -1,0 +1,36 @@
+{
+  "paths": {
+    "children": {
+      "items": {
+        "operation": {
+          "headerParams": [
+            {
+              "name": "HeaderA",
+              "required": false
+            },
+            {
+              "name": "HeaderB",
+              "required": false
+            }
+          ],
+          "id": "listItems",
+          "pathArgNames": [],
+          "pathFormat": "/items",
+          "pathTemplate": "/items",
+          "queryParams": [
+            {
+              "name": "alpha",
+              "required": false
+            },
+            {
+              "name": "zebra",
+              "required": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  "title": "Multiparam",
+  "version": "1"
+}

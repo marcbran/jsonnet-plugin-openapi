@@ -18,8 +18,8 @@ import (
 
 	"github.com/google/go-jsonnet/formatter"
 	"github.com/marcbran/jpoet/pkg/jpoet"
+	pluginhttp "github.com/marcbran/jsonnet-plugin-http/http"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
-	openapiplug "github.com/marcbran/jsonnet-plugin-openapi/openapi"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,7 +32,7 @@ func testdataRoot() string {
 }
 
 func (s *Stage) a_spec(name string) *Stage {
-	s.specPath = filepath.Join(testdataRoot(), name+".yaml")
+	s.ref = filepath.Join(testdataRoot(), name+".yaml")
 	return s
 }
 
@@ -108,16 +108,16 @@ func (s *Stage) a_docker_container(image string, internalPort int) *Stage {
 
 func (s *Stage) a_spec_url(url string) *Stage {
 	if s.liveHTTPOrigin != "" && strings.HasPrefix(url, "/") {
-		s.specPath = strings.TrimSuffix(s.liveHTTPOrigin, "/") + url
+		s.ref = strings.TrimSuffix(s.liveHTTPOrigin, "/") + url
 		return s
 	}
-	s.specPath = url
+	s.ref = url
 	return s
 }
 
 func (s *Stage) the_gen_command_is_run() *Stage {
 	out, err := s.facade.Generate(context.Background(), openapipkg.Input{
-		Spec:    s.specPath,
+		Ref:     s.ref,
 		OutDir:  s.outDir,
 		Service: s.service,
 		PkgRepo: "git@github.com:marcbran/jsonnet.git",
@@ -139,7 +139,7 @@ func (s *Stage) the_gen_has_no_error() *Stage {
 
 func (s *Stage) the_generated_files_match(name string) *Stage {
 	expectedDir := filepath.Join(testdataRoot(), name)
-	names := []string{"openapi.resolved.json", "main.libsonnet", "pkg.libsonnet"}
+	names := []string{"main.libsonnet", "pkg.libsonnet"}
 	for _, fname := range names {
 		gotPath := filepath.Join(s.outDir, fname)
 		wantPath := filepath.Join(expectedDir, fname)
@@ -167,7 +167,7 @@ func (s *Stage) a_jsonnet_request_is_evaluated(baseURL string, expr string) *Sta
 	snippet := fmt.Sprintf("local %s = import 'main.libsonnet';\n%s", s.service, expr)
 	var out map[string]any
 	s.evalErr = jpoet.Eval(
-		jpoet.WithPlugin(openapiplug.Plugin(s.service, openapiplug.WithBaseURL(baseURL))),
+		jpoet.WithPlugin(pluginhttp.Plugin(s.service, pluginhttp.WithBaseURL(baseURL))),
 		jpoet.FileImport([]string{s.outDir}),
 		jpoet.SnippetInput("eval.jsonnet", snippet),
 		jpoet.ValueOutput(&out),

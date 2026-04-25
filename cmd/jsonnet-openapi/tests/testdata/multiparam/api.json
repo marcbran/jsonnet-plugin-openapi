@@ -1,0 +1,34 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "listItems",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "zebra",
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "alpha",
+            "required": false
+          },
+          {
+            "in": "header",
+            "name": "HeaderB",
+            "required": false
+          },
+          {
+            "in": "header",
+            "name": "HeaderA",
+            "required": false
+          }
+        ]
+      },
+      "path": "/items"
+    }
+  ],
+  "title": "Multiparam",
+  "version": "1"
+}

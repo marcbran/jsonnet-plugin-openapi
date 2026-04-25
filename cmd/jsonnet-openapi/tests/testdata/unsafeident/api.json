@@ -1,0 +1,19 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "listUserProfiles",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Trace-Id",
+            "required": false
+          }
+        ]
+      },
+      "path": "/user-profiles"
+    }
+  ],
+  "title": "Unsafe Jsonnet identifiers",
+  "version": "1"
+}

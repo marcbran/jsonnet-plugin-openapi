@@ -1,0 +1,12 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "listUsers"
+      },
+      "path": "/users"
+    }
+  ],
+  "title": "One",
+  "version": "1"
+}

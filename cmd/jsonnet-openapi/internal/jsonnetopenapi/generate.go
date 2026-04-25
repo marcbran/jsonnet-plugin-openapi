@@ -2,19 +2,21 @@ package jsonnetopenapi
 
 import (
 	"context"
+	"encoding/json"
 	"os"
-	"path/filepath"
 
+	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
+	"github.com/marcbran/jpoet/pkg/jpoet"
+	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 )
 
-const resolvedSpecFile = "openapi.resolved.json"
-
 type facade struct {
-	loader OpenAPILoader
+	loader internalopenapi.Loader
 }
 
-func NewFacade(loader OpenAPILoader) openapipkg.Facade {
+func NewFacade(loader internalopenapi.Loader) openapipkg.Facade {
 	return &facade{loader: loader}
 }
 
@@ -31,7 +33,7 @@ func (g *facade) Batch(ctx context.Context, jobs []openapipkg.Input) ([]openapip
 }
 
 func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.Output, error) {
-	ls, err := g.loader.Load(ctx, in.Spec)
+	api, err := g.loader.Load(ctx, in.Ref)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
@@ -39,26 +41,54 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	resPath := filepath.Join(in.OutDir, resolvedSpecFile)
-	err = os.WriteFile(resPath, ls.ResolvedJSON, 0666)
+	nested, err := internalopenapi.BuildNestedSpec(api)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	payload, err := BuildPayload(ls.API, in.Service, in.Spec)
+	service, err := internalopenapi.ResolveServiceName(in.Service, api.Title, in.Ref)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
-	payload.PkgRepo = in.PkgRepo
-	err = writeGeneratedLibsonnet(in.OutDir, payload)
+	err = writeGeneratedLibsonnet(in.OutDir, nested, service, in.PkgRepo)
 	if err != nil {
 		return openapipkg.Output{}, err
 	}
 	return openapipkg.Output{
 		OutDir: in.OutDir,
 		Files: []string{
-			resolvedSpecFile,
 			"main.libsonnet",
 			"pkg.libsonnet",
 		},
 	}, nil
+}
+
+func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
+	apiJSON, err := json.Marshal(generationInput{
+		Spec:    spec,
+		Service: service,
+		PkgRepo: pkgRepo,
+	})
+	if err != nil {
+		return err
+	}
+	err = jpoet.Eval(
+		jpoet.FileImport([]string{}),
+		jpoet.FSImport(lib),
+		jpoet.FSImport(imports.Fs),
+		jpoet.WithPlugin(jsonnet.Plugin()),
+		jpoet.TLACode("api", string(apiJSON)),
+		jpoet.FileInput("./lib/gen.libsonnet"),
+		jpoet.Serialize(false),
+		jpoet.DirectoryOutput(outDir),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type generationInput struct {
+	Spec    *internalopenapi.NestedSpec `json:"spec"`
+	Service string                      `json:"service"`
+	PkgRepo string                      `json:"pkgRepo"`
 }

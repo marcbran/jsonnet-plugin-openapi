@@ -1,0 +1,19 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true
+          }
+        ]
+      },
+      "path": "/users/{userId}"
+    }
+  ],
+  "title": "P",
+  "version": "1"
+}

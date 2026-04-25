@@ -1,0 +1,31 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "listR"
+      },
+      "path": "/r"
+    },
+    {
+      "get": {
+        "operationId": "literalGet"
+      },
+      "path": "/r/get"
+    },
+    {
+      "get": {
+        "operationId": "getById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ]
+      },
+      "path": "/r/{id}"
+    }
+  ],
+  "title": "Get collision",
+  "version": "1"
+}

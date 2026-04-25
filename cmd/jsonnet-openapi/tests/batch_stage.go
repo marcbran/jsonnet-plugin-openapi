@@ -12,7 +12,7 @@ import (
 
 func (s *Stage) a_batch_job_from_testdata(specBaseName string, outputDirUnderTemp string, service string) *Stage {
 	s.batchJobs = append(s.batchJobs, openapipkg.Input{
-		Spec:    filepath.Join(testdataRoot(), specBaseName+".yaml"),
+		Ref:     filepath.Join(testdataRoot(), specBaseName+".yaml"),
 		OutDir:  filepath.Join(s.tempDir, outputDirUnderTemp),
 		Service: service,
 	})
@@ -21,7 +21,7 @@ func (s *Stage) a_batch_job_from_testdata(specBaseName string, outputDirUnderTem
 
 func (s *Stage) a_batch_job_with_missing_spec_file(outputDirUnderTemp string, service string) *Stage {
 	s.batchJobs = append(s.batchJobs, openapipkg.Input{
-		Spec:    filepath.Join(s.tempDir, "this-spec-file-does-not-exist.yaml"),
+		Ref:     filepath.Join(s.tempDir, "this-spec-file-does-not-exist.yaml"),
 		OutDir:  filepath.Join(s.tempDir, outputDirUnderTemp),
 		Service: service,
 	})

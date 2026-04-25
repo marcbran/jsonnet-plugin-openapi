@@ -1,0 +1,12 @@
+{
+  "paths": [
+    {
+      "get": {
+        "operationId": "getImportRoot"
+      },
+      "path": "/import"
+    }
+  ],
+  "title": "Reserved import path segment",
+  "version": "1"
+}

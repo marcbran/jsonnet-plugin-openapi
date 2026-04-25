@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/kinopenapi"
 	jnogen "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
+	"github.com/marcbran/jsonnet-plugin-openapi/internal/infra/kinopenapi"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +60,7 @@ func runGen(cmd *cobra.Command, args []string) error {
 
 	g := jnogen.NewFacade(kinopenapi.NewLoader())
 	out, err := g.Generate(cmd.Context(), jsonnetopenapi.Input{
-		Spec:    args[0],
+		Ref:     args[0],
 		OutDir:  outDir,
 		Service: service,
 		PkgRepo: pkgRepo,

@@ -1,3 +1,4 @@
 {
-  request(input): std.native('invoke:openapi')('request', [input]),
+  apiSpec(spec): std.native('invoke:openapi')('apiSpec', [spec]),
+  nestedSpec(spec): std.native('invoke:openapi')('nestedSpec', [spec]),
 }

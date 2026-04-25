@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/kinopenapi"
 	jnogen "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
+	"github.com/marcbran/jsonnet-plugin-openapi/internal/infra/kinopenapi"
 	"github.com/spf13/cobra"
 )
 
@@ -50,8 +50,8 @@ func runBatch(cmd *cobra.Command, args []string) error {
 
 	configDir := filepath.Dir(configPath)
 	for i := range jobs {
-		if jobs[i].Spec != "" && !filepath.IsAbs(jobs[i].Spec) {
-			jobs[i].Spec = filepath.Join(configDir, jobs[i].Spec)
+		if jobs[i].Ref != "" && !filepath.IsAbs(jobs[i].Ref) {
+			jobs[i].Ref = filepath.Join(configDir, jobs[i].Ref)
 		}
 		outDir := jobs[i].OutDir
 		if outDir == "" {

@@ -1,0 +1,24 @@
+{
+  "paths": {
+    "children": {
+      "users": {
+        "children": {
+          "{userId}": {
+            "operation": {
+              "headerParams": [],
+              "id": "getUser",
+              "pathArgNames": [
+                "userId"
+              ],
+              "pathFormat": "/users/%s",
+              "pathTemplate": "/users/{userId}",
+              "queryParams": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "title": "P",
+  "version": "1"
+}
