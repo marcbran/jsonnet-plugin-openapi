@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.2.0...v0.3.0) (2026-04-26)
+
+
+### Features
+
+* batch gen job ([#22](https://github.com/marcbran/jsonnet-plugin-openapi/issues/22)) ([83a9569](https://github.com/marcbran/jsonnet-plugin-openapi/commit/83a95690c00ab47d9b3d115e215dfa81a6d32072))
+* refocus plugin onto openapi spec ([#25](https://github.com/marcbran/jsonnet-plugin-openapi/issues/25)) ([f111774](https://github.com/marcbran/jsonnet-plugin-openapi/commit/f11177469529ef0905fc4ec801fe6e589acb46f9))
+
+
+### Bug Fixes
+
+* new jpoet invocation format ([#21](https://github.com/marcbran/jsonnet-plugin-openapi/issues/21)) ([42e1dd7](https://github.com/marcbran/jsonnet-plugin-openapi/commit/42e1dd73572be7a0058fe3e5780097787fb4b0dd))
+
 ## [0.2.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.1.1...v0.2.0) (2026-04-11)
 
 
