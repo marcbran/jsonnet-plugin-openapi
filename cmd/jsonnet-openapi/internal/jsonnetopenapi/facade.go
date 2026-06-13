@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"os"
 
-	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/inferlinks"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
+	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
 
 type facade struct {
@@ -62,6 +63,12 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	}, nil
 }
 
+type generationInput struct {
+	Spec    *internalopenapi.NestedSpec `json:"spec"`
+	Service string                      `json:"service"`
+	PkgRepo string                      `json:"pkgRepo"`
+}
+
 func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
 	apiJSON, err := json.Marshal(generationInput{
 		Spec:    spec,
@@ -87,8 +94,21 @@ func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, se
 	return nil
 }
 
-type generationInput struct {
-	Spec    *internalopenapi.NestedSpec `json:"spec"`
-	Service string                      `json:"service"`
-	PkgRepo string                      `json:"pkgRepo"`
+func (g *facade) InferLinks(ctx context.Context, in openapipkg.InferLinksInput) (openapipkg.InferLinksOutput, error) {
+	out, err := inferlinks.Run(ctx, inferlinks.Input{
+		Spec:    in.Spec,
+		Out:     in.Out,
+		WorkDir: in.WorkDir,
+		Model:   in.Model,
+		Limit:   in.Limit,
+		Force:   in.Force,
+	})
+	if err != nil {
+		return openapipkg.InferLinksOutput{}, err
+	}
+	return openapipkg.InferLinksOutput{
+		Out:     out.Out,
+		WorkDir: out.WorkDir,
+		Files:   out.Files,
+	}, nil
 }
