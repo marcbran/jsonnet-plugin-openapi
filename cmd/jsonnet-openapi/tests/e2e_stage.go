@@ -31,11 +31,11 @@ type Stage struct {
 	lastBatchOutputs []openapipkg.Output
 	lastBatchErr     string
 
-	inferLinksSpec    string
-	inferLinksOut     string
-	lastLinksOutput   openapipkg.InferLinksOutput
-	lastInferLinksErr string
-	inferLinksWorkDir string
+	listDetailLinksSpec       string
+	listDetailLinksOut        string
+	lastListDetailLinksOutput openapipkg.ListDetailLinksOutput
+	lastListDetailLinksErr    string
+	listDetailLinksWorkDir    string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

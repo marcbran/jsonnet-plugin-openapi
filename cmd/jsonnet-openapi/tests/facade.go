@@ -115,9 +115,10 @@ func (f *CLIFacade) Generate(ctx context.Context, in openapipkg.Input) (openapip
 	return out, nil
 }
 
-func (f *CLIFacade) InferLinks(ctx context.Context, in openapipkg.InferLinksInput) (openapipkg.InferLinksOutput, error) {
+func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
 	args := []string{
-		"infer-links",
+		"list-detail-links",
+		"infer",
 		in.Spec,
 		"-q",
 	}
@@ -144,9 +145,9 @@ func (f *CLIFacade) InferLinks(ctx context.Context, in openapipkg.InferLinksInpu
 	err := cmd.Run()
 	if err != nil {
 		if stderr.String() != "" {
-			return openapipkg.InferLinksOutput{}, errors.New(stderr.String())
+			return openapipkg.ListDetailLinksOutput{}, errors.New(stderr.String())
 		}
-		return openapipkg.InferLinksOutput{}, err
+		return openapipkg.ListDetailLinksOutput{}, err
 	}
 	outPath := strings.TrimSpace(stdout.String())
 	workDir := in.WorkDir
@@ -155,7 +156,7 @@ func (f *CLIFacade) InferLinks(ctx context.Context, in openapipkg.InferLinksInpu
 		specName := strings.TrimSuffix(filepath.Base(in.Spec), filepath.Ext(in.Spec))
 		workDir = filepath.Join(specDir, specName)
 	}
-	return openapipkg.InferLinksOutput{
+	return openapipkg.ListDetailLinksOutput{
 		Out:     outPath,
 		WorkDir: workDir,
 		Files: []string{

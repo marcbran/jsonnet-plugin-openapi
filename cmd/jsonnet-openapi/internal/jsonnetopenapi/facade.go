@@ -7,8 +7,8 @@ import (
 
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/inferlinks"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listdetaillinks"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
@@ -94,8 +94,8 @@ func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, se
 	return nil
 }
 
-func (g *facade) InferLinks(ctx context.Context, in openapipkg.InferLinksInput) (openapipkg.InferLinksOutput, error) {
-	out, err := inferlinks.Run(ctx, inferlinks.Input{
+func (g *facade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
+	out, err := listdetaillinks.Exec(ctx, listdetaillinks.Input{
 		Spec:    in.Spec,
 		Out:     in.Out,
 		WorkDir: in.WorkDir,
@@ -104,9 +104,9 @@ func (g *facade) InferLinks(ctx context.Context, in openapipkg.InferLinksInput) 
 		Force:   in.Force,
 	})
 	if err != nil {
-		return openapipkg.InferLinksOutput{}, err
+		return openapipkg.ListDetailLinksOutput{}, err
 	}
-	return openapipkg.InferLinksOutput{
+	return openapipkg.ListDetailLinksOutput{
 		Out:     out.Out,
 		WorkDir: out.WorkDir,
 		Files:   out.Files,

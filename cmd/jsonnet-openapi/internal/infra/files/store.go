@@ -1,0 +1,78 @@
+package files
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+type Store struct {
+	workDir string
+}
+
+func NewStore(workDir string) *Store {
+	return &Store{workDir: workDir}
+}
+
+func (s *Store) Load(jobName string, taskID string) ([]byte, bool, error) {
+	path := s.resultPath(jobName, taskID)
+	raw, err := os.ReadFile(path)
+	if err == nil {
+		return raw, true, nil
+	}
+	if os.IsNotExist(err) {
+		return nil, false, nil
+	}
+	return nil, false, err
+}
+
+func (s *Store) Save(jobName string, taskID string, output []byte) error {
+	path := s.resultPath(jobName, taskID)
+	err := os.MkdirAll(filepath.Dir(path), 0755)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, bytes.TrimSpace(output), 0644)
+}
+
+func (s *Store) LoadAll(jobName string) (string, error) {
+	resultsDir := filepath.Join(s.workDir, jobName, "results")
+	err := os.MkdirAll(resultsDir, 0755)
+	if err != nil {
+		return "", err
+	}
+	files, err := filepath.Glob(filepath.Join(resultsDir, "*.json"))
+	if err != nil {
+		return "", err
+	}
+	sort.Strings(files)
+
+	var imports strings.Builder
+	imports.WriteString("[\n")
+	var results strings.Builder
+	results.WriteString("[\n")
+	for _, file := range files {
+		base := filepath.Base(file)
+		imports.WriteString(fmt.Sprintf("  import %q,\n", base))
+		raw, err := os.ReadFile(file)
+		if err != nil {
+			return "", err
+		}
+		results.Write(bytes.TrimSpace(raw))
+		results.WriteString(",\n")
+	}
+	imports.WriteString("]\n")
+	results.WriteString("]\n")
+	err = os.WriteFile(filepath.Join(resultsDir, "all.jsonnet"), []byte(imports.String()), 0644)
+	if err != nil {
+		return "", err
+	}
+	return results.String(), nil
+}
+
+func (s *Store) resultPath(jobName string, taskID string) string {
+	return filepath.Join(s.workDir, jobName, "results", taskID+".json")
+}
