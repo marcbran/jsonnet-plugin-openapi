@@ -3,14 +3,17 @@ package inferlinks
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/marcbran/jpoet/pkg/jpoet"
 )
 
@@ -70,16 +73,14 @@ type Output struct {
 }
 
 func Run(ctx context.Context, in Input) (Output, error) {
-	spec, err := filepath.Abs(in.Spec)
+	specJSON, err := loadSpecJSON(ctx, in.Spec)
 	if err != nil {
 		return Output{}, err
 	}
-	specJSON, err := os.ReadFile(spec)
+	specDir, specName, err := localOutputDefaults(in.Spec)
 	if err != nil {
 		return Output{}, err
 	}
-	specDir := filepath.Dir(spec)
-	specName := strings.TrimSuffix(filepath.Base(spec), filepath.Ext(spec))
 	workDir := in.WorkDir
 	if workDir == "" {
 		workDir = filepath.Join(specDir, specName)
@@ -107,7 +108,7 @@ func Run(ctx context.Context, in Input) (Output, error) {
 	}
 
 	listDetailDir := filepath.Join(workDir, "list-detail-inference")
-	err = generateBundles(sub, string(specJSON), "", "list-detail-inference-bundles.jsonnet", filepath.Join(listDetailDir, "bundles"))
+	err = generateBundles(sub, specJSON, "", "list-detail-inference-bundles.jsonnet", filepath.Join(listDetailDir, "bundles"))
 	if err != nil {
 		return Output{}, err
 	}
@@ -130,7 +131,7 @@ func Run(ctx context.Context, in Input) (Output, error) {
 	}
 
 	varsDir := filepath.Join(workDir, "list-detail-vars-inference")
-	err = generateBundles(sub, string(specJSON), inferred, "list-detail-vars-inference-bundles.jsonnet", filepath.Join(varsDir, "bundles"))
+	err = generateBundles(sub, specJSON, inferred, "list-detail-vars-inference-bundles.jsonnet", filepath.Join(varsDir, "bundles"))
 	if err != nil {
 		return Output{}, err
 	}
@@ -165,7 +166,7 @@ func Run(ctx context.Context, in Input) (Output, error) {
 		jpoet.FSImport(sub),
 		jpoet.SnippetInput("list-detail-links", fmt.Sprintf(
 			"local spec = %s; local inferred = %s; local varsInferred = %s; (import 'list-detail-links.jsonnet')(spec, inferred, varsInferred)",
-			string(specJSON),
+			specJSON,
 			inferred,
 			varsInferred,
 		)),
@@ -184,6 +185,71 @@ func Run(ctx context.Context, in Input) (Output, error) {
 			out,
 		},
 	}, nil
+}
+
+func loadSpecJSON(ctx context.Context, ref string) (string, error) {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.Context = ctx
+	var doc *openapi3.T
+	var err error
+	if isHTTPRef(ref) {
+		u, perr := url.Parse(ref)
+		if perr != nil {
+			return "", perr
+		}
+		doc, err = loader.LoadFromURI(u)
+	} else {
+		abs, perr := filepath.Abs(ref)
+		if perr != nil {
+			return "", perr
+		}
+		doc, err = loader.LoadFromFile(abs)
+	}
+	if err != nil {
+		return "", err
+	}
+	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
+	if err != nil {
+		return "", err
+	}
+	doc.InternalizeRefs(ctx, nil)
+	raw, err := json.Marshal(doc)
+	if err != nil {
+		return "", err
+	}
+	return string(raw), nil
+}
+
+func localOutputDefaults(ref string) (dir string, name string, err error) {
+	if isHTTPRef(ref) {
+		u, err := url.Parse(ref)
+		if err != nil {
+			return "", "", err
+		}
+		name = strings.TrimSuffix(filepath.Base(u.Path), filepath.Ext(u.Path))
+		if name == "" || name == "." || name == "/" {
+			name = "openapi"
+		}
+		dir, err = os.Getwd()
+		if err != nil {
+			return "", "", err
+		}
+		return dir, name, nil
+	}
+	abs, err := filepath.Abs(ref)
+	if err != nil {
+		return "", "", err
+	}
+	name = strings.TrimSuffix(filepath.Base(abs), filepath.Ext(abs))
+	if name == "" {
+		name = "openapi"
+	}
+	return filepath.Dir(abs), name, nil
+}
+
+func isHTTPRef(ref string) bool {
+	return strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://")
 }
 
 func generateBundles(imports fs.FS, specJSON, inferred, file, outDir string) error {

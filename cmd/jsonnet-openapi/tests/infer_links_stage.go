@@ -16,6 +16,11 @@ func (s *Stage) an_infer_links_spec(name string) *Stage {
 	return s
 }
 
+func (s *Stage) an_infer_links_spec_file(name string) *Stage {
+	s.inferLinksSpec = filepath.Join(testdataRoot(), name)
+	return s
+}
+
 func (s *Stage) an_infer_links_output_under_temp(name string) *Stage {
 	s.inferLinksOut = filepath.Join(s.tempDir, name)
 	return s
@@ -61,10 +66,12 @@ func (s *Stage) the_infer_links_has_no_error() *Stage {
 	return s
 }
 
-func (s *Stage) the_links_file_contains(content string) *Stage {
+func (s *Stage) the_links_file_matches(fixture string) *Stage {
 	raw, err := os.ReadFile(s.lastLinksOutput.Out)
 	require.NoError(s.t, err)
-	require.Equal(s.t, content, string(raw))
+	expected, err := os.ReadFile(filepath.Join(testdataRoot(), fixture))
+	require.NoError(s.t, err)
+	require.Equal(s.t, string(expected), string(raw))
 	return s
 }
 
