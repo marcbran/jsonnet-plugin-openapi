@@ -36,6 +36,12 @@ type Stage struct {
 	lastListDetailLinksOutput openapipkg.ListDetailLinksOutput
 	lastListDetailLinksErr    string
 	listDetailLinksWorkDir    string
+
+	listColumnsSpec       string
+	listColumnsOut        string
+	lastListColumnsOutput openapipkg.ListColumnsOutput
+	lastListColumnsErr    string
+	listColumnsWorkDir    string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

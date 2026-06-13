@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/inference"
@@ -14,6 +15,11 @@ import (
 
 type Renderer struct {
 	fs fs.FS
+}
+
+type Binding struct {
+	Name  string
+	Value string
 }
 
 func NewRenderer(fs fs.FS) *Renderer {
@@ -65,16 +71,18 @@ func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON 
 	return bundles, nil
 }
 
-func (r *Renderer) RenderLinks(specJSON string, inferredJSON string, varsJSON string) ([]byte, error) {
+func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, error) {
+	var locals bytes.Buffer
+	names := make([]string, 0, len(bindings))
+	for _, binding := range bindings {
+		locals.WriteString(fmt.Sprintf("local %s = %s; ", binding.Name, binding.Value))
+		names = append(names, binding.Name)
+	}
+
 	var out bytes.Buffer
 	err := jpoet.Eval(
 		jpoet.FSImport(r.fs),
-		jpoet.SnippetInput("list-detail-links", fmt.Sprintf(
-			"local spec = %s; local inferred = %s; local varsInferred = %s; (import 'list-detail-links.jsonnet')(spec, inferred, varsInferred)",
-			specJSON,
-			inferredJSON,
-			varsJSON,
-		)),
+		jpoet.SnippetInput(template, fmt.Sprintf("%s(import %q)(%s)", locals.String(), template, strings.Join(names, ", "))),
 		jpoet.WriterOutput(&out),
 	)
 	if err != nil {

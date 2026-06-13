@@ -17,7 +17,6 @@ type Bundle struct {
 
 type BundleRenderer interface {
 	RenderBundles(template string, specJSON string, previousJSON string) ([]Bundle, error)
-	RenderLinks(specJSON string, inferredJSON string, varsJSON string) ([]byte, error)
 }
 
 type Task struct {

@@ -39,10 +39,6 @@ func (l *Loader) LoadSpec(ctx context.Context, ref string) (inference.SpecDocume
 	if err != nil {
 		return inference.SpecDocument{}, err
 	}
-	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
-	if err != nil {
-		return inference.SpecDocument{}, err
-	}
 	doc.InternalizeRefs(ctx, nil)
 	raw, err := json.Marshal(doc)
 	if err != nil {

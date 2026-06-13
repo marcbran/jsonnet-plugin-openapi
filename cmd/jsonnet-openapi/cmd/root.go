@@ -19,6 +19,7 @@ func init() {
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(batchCmd)
 	rootCmd.AddCommand(listDetailLinksCmd)
+	rootCmd.AddCommand(listColumnsCmd)
 	rootCmd.Version = version
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listcolumns"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listdetaillinks"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
@@ -107,6 +108,25 @@ func (g *facade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDet
 		return openapipkg.ListDetailLinksOutput{}, err
 	}
 	return openapipkg.ListDetailLinksOutput{
+		Out:     out.Out,
+		WorkDir: out.WorkDir,
+		Files:   out.Files,
+	}, nil
+}
+
+func (g *facade) InferListColumns(ctx context.Context, in openapipkg.ListColumnsInput) (openapipkg.ListColumnsOutput, error) {
+	out, err := listcolumns.Exec(ctx, listcolumns.Input{
+		Spec:    in.Spec,
+		Out:     in.Out,
+		WorkDir: in.WorkDir,
+		Model:   in.Model,
+		Limit:   in.Limit,
+		Force:   in.Force,
+	})
+	if err != nil {
+		return openapipkg.ListColumnsOutput{}, err
+	}
+	return openapipkg.ListColumnsOutput{
 		Out:     out.Out,
 		WorkDir: out.WorkDir,
 		Files:   out.Files,

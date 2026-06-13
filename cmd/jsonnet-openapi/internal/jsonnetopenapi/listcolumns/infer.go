@@ -1,4 +1,4 @@
-package listdetaillinks
+package listcolumns
 
 import (
 	"context"
@@ -46,7 +46,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	}
 	out := in.Out
 	if out == "" {
-		out = filepath.Join(specDir, specName+".links.json")
+		out = filepath.Join(specDir, specName+".columns.json")
 	}
 	out, err = filepath.Abs(out)
 	if err != nil {
@@ -66,8 +66,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	store := files.NewStore(workDir)
 	pipeline := inference.Pipeline{
 		Jobs: []inference.Job{
-			NewListDetailJob(renderer),
-			NewVarsJob(renderer),
+			NewColumnsJob(renderer),
 		},
 		Runner: codex.NewRunner(model),
 		Store:  store,
@@ -83,10 +82,9 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	links, err := renderer.RenderOutput("list-detail-links.jsonnet",
+	columns, err := renderer.RenderOutput("list-columns.jsonnet",
 		infrajsonnet.Binding{Name: "spec", Value: spec.JSON},
-		infrajsonnet.Binding{Name: "inferred", Value: results[ListDetailJobName]},
-		infrajsonnet.Binding{Name: "varsInferred", Value: results[VarsJobName]},
+		infrajsonnet.Binding{Name: "inferred", Value: results[ColumnsJobName]},
 	)
 	if err != nil {
 		return Output{}, err
@@ -96,7 +94,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	err = os.WriteFile(out, links, 0644)
+	err = os.WriteFile(out, columns, 0644)
 	if err != nil {
 		return Output{}, err
 	}
@@ -105,8 +103,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 		Out:     out,
 		WorkDir: workDir,
 		Files: []string{
-			relativeOrAbs(workDir, filepath.Join(workDir, ListDetailJobName, "results", "all.jsonnet")),
-			relativeOrAbs(workDir, filepath.Join(workDir, VarsJobName, "results", "all.jsonnet")),
+			relativeOrAbs(workDir, filepath.Join(workDir, ColumnsJobName, "results", "all.jsonnet")),
 			out,
 		},
 	}, nil
