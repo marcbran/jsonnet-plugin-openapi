@@ -14,10 +14,10 @@ type Stage struct {
 
 	facade openapipkg.Facade
 
-	tempDir  string
-	outDir   string
-	ref      string
-	service  string
+	tempDir string
+	outDir  string
+	ref     string
+	service string
 
 	lastOutput openapipkg.Output
 	lastErr    string
@@ -30,6 +30,18 @@ type Stage struct {
 	batchJobs        []openapipkg.Input
 	lastBatchOutputs []openapipkg.Output
 	lastBatchErr     string
+
+	listDetailLinksSpec       string
+	listDetailLinksOut        string
+	lastListDetailLinksOutput openapipkg.ListDetailLinksOutput
+	lastListDetailLinksErr    string
+	listDetailLinksWorkDir    string
+
+	listColumnsSpec       string
+	listColumnsOut        string
+	lastListColumnsOutput openapipkg.ListColumnsOutput
+	lastListColumnsErr    string
+	listColumnsWorkDir    string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

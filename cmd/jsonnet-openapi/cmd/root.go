@@ -18,6 +18,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Suppress progress messages on stderr")
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(batchCmd)
+	rootCmd.AddCommand(listDetailLinksCmd)
+	rootCmd.AddCommand(listColumnsCmd)
 	rootCmd.Version = version
 }
 

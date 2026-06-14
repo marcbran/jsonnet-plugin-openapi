@@ -1,0 +1,45 @@
+[
+   {
+      "array": [ ],
+      "columns": [
+         {
+            "key": "id",
+            "kind": "identifier",
+            "label": "ID",
+            "path": [
+               "id"
+            ],
+            "priority": "primary"
+         },
+         {
+            "key": "name",
+            "kind": "name",
+            "label": "Name",
+            "path": [
+               "name"
+            ],
+            "priority": "secondary"
+         },
+         {
+            "key": "status",
+            "kind": "status",
+            "label": "Status",
+            "path": [
+               "status"
+            ],
+            "priority": "secondary"
+         },
+         {
+            "key": "createdAt",
+            "kind": "timestamp",
+            "label": "Created",
+            "path": [
+               "createdAt"
+            ],
+            "priority": "tertiary"
+         }
+      ],
+      "operationId": "listUsers",
+      "sourcePath": "/users"
+   }
+]

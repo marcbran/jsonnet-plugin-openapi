@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 )
@@ -111,4 +113,104 @@ func (f *CLIFacade) Generate(ctx context.Context, in openapipkg.Input) (openapip
 		return openapipkg.Output{}, err
 	}
 	return out, nil
+}
+
+func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
+	args := []string{
+		"list-detail-links",
+		"infer",
+		in.Spec,
+		"-q",
+	}
+	if in.Out != "" {
+		args = append(args, "--out", in.Out)
+	}
+	if in.WorkDir != "" {
+		args = append(args, "--workdir", in.WorkDir)
+	}
+	if in.Model != "" {
+		args = append(args, "--model", in.Model)
+	}
+	if in.Limit > 0 {
+		args = append(args, "--limit", fmt.Sprintf("%d", in.Limit))
+	}
+	if in.Force {
+		args = append(args, "--force")
+	}
+	cmd := exec.CommandContext(ctx, f.binaryPath, args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		if stderr.String() != "" {
+			return openapipkg.ListDetailLinksOutput{}, errors.New(stderr.String())
+		}
+		return openapipkg.ListDetailLinksOutput{}, err
+	}
+	outPath := strings.TrimSpace(stdout.String())
+	workDir := in.WorkDir
+	if workDir == "" {
+		specDir := filepath.Dir(in.Spec)
+		specName := strings.TrimSuffix(filepath.Base(in.Spec), filepath.Ext(in.Spec))
+		workDir = filepath.Join(specDir, specName)
+	}
+	return openapipkg.ListDetailLinksOutput{
+		Out:     outPath,
+		WorkDir: workDir,
+		Files: []string{
+			outPath,
+		},
+	}, nil
+}
+
+func (f *CLIFacade) InferListColumns(ctx context.Context, in openapipkg.ListColumnsInput) (openapipkg.ListColumnsOutput, error) {
+	args := []string{
+		"list-columns",
+		"infer",
+		in.Spec,
+		"-q",
+	}
+	if in.Out != "" {
+		args = append(args, "--out", in.Out)
+	}
+	if in.WorkDir != "" {
+		args = append(args, "--workdir", in.WorkDir)
+	}
+	if in.Model != "" {
+		args = append(args, "--model", in.Model)
+	}
+	if in.Limit > 0 {
+		args = append(args, "--limit", fmt.Sprintf("%d", in.Limit))
+	}
+	if in.Force {
+		args = append(args, "--force")
+	}
+	cmd := exec.CommandContext(ctx, f.binaryPath, args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		if stderr.String() != "" {
+			return openapipkg.ListColumnsOutput{}, errors.New(stderr.String())
+		}
+		return openapipkg.ListColumnsOutput{}, err
+	}
+	outPath := strings.TrimSpace(stdout.String())
+	workDir := in.WorkDir
+	if workDir == "" {
+		specDir := filepath.Dir(in.Spec)
+		specName := strings.TrimSuffix(filepath.Base(in.Spec), filepath.Ext(in.Spec))
+		workDir = filepath.Join(specDir, specName)
+	}
+	return openapipkg.ListColumnsOutput{
+		Out:     outPath,
+		WorkDir: workDir,
+		Files: []string{
+			outPath,
+		},
+	}, nil
 }

@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"os"
 
-	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	"github.com/marcbran/jsonnet-plugin-jsonnet/jsonnet"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/lib/imports"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listcolumns"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listdetaillinks"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
+	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
 
 type facade struct {
@@ -62,6 +64,12 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	}, nil
 }
 
+type generationInput struct {
+	Spec    *internalopenapi.NestedSpec `json:"spec"`
+	Service string                      `json:"service"`
+	PkgRepo string                      `json:"pkgRepo"`
+}
+
 func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
 	apiJSON, err := json.Marshal(generationInput{
 		Spec:    spec,
@@ -87,8 +95,40 @@ func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, se
 	return nil
 }
 
-type generationInput struct {
-	Spec    *internalopenapi.NestedSpec `json:"spec"`
-	Service string                      `json:"service"`
-	PkgRepo string                      `json:"pkgRepo"`
+func (g *facade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
+	out, err := listdetaillinks.Exec(ctx, listdetaillinks.Input{
+		Spec:    in.Spec,
+		Out:     in.Out,
+		WorkDir: in.WorkDir,
+		Model:   in.Model,
+		Limit:   in.Limit,
+		Force:   in.Force,
+	})
+	if err != nil {
+		return openapipkg.ListDetailLinksOutput{}, err
+	}
+	return openapipkg.ListDetailLinksOutput{
+		Out:     out.Out,
+		WorkDir: out.WorkDir,
+		Files:   out.Files,
+	}, nil
+}
+
+func (g *facade) InferListColumns(ctx context.Context, in openapipkg.ListColumnsInput) (openapipkg.ListColumnsOutput, error) {
+	out, err := listcolumns.Exec(ctx, listcolumns.Input{
+		Spec:    in.Spec,
+		Out:     in.Out,
+		WorkDir: in.WorkDir,
+		Model:   in.Model,
+		Limit:   in.Limit,
+		Force:   in.Force,
+	})
+	if err != nil {
+		return openapipkg.ListColumnsOutput{}, err
+	}
+	return openapipkg.ListColumnsOutput{
+		Out:     out.Out,
+		WorkDir: out.WorkDir,
+		Files:   out.Files,
+	}, nil
 }
