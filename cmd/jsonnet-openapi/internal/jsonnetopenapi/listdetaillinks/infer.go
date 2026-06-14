@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/inference"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/codex"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/files"
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/inference"
 	infrajsonnet "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/jsonnet"
 	infrakinopenapi "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/kinopenapi"
 )
@@ -62,7 +62,11 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	renderer := infrajsonnet.NewRenderer(lib)
+	sharedLib, err := inference.Lib()
+	if err != nil {
+		return Output{}, err
+	}
+	renderer := infrajsonnet.NewRenderer(lib, sharedLib)
 	store := files.NewStore(workDir)
 	pipeline := inference.Pipeline{
 		Jobs: []inference.Job{

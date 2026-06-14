@@ -1,4 +1,4 @@
-package jsonnetopenapi
+package gen
 
 import "embed"
 
