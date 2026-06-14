@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/inference"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/inference"
 )
 
 const ListDetailJobName = "list-detail-inference"

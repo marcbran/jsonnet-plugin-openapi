@@ -2,49 +2,27 @@ local endsWithPathVar(path) =
   std.length(path) >= 2 &&
   path[std.length(path) - 1] == '}' &&
   std.findSubstr('{', path) != [];
-
-local responseRefName(ref) = std.strReplace(ref, '#/components/responses/', '');
-local responseSchema(spec, response) =
-  local resolved =
-    if std.type(response) == 'object' &&
-       std.objectHas(response, '$ref') &&
-       std.startsWith(response['$ref'], '#/components/responses/')
-    then spec.components.responses[responseRefName(response['$ref'])]
-    else response;
-  local content = std.get(resolved, 'content', {});
-  local contentTypes = std.objectFields(content);
-  local child =
-    if std.objectHas(content, 'application/json') then content['application/json']
-    else if std.length(contentTypes) > 0 then content[contentTypes[0]]
-    else {};
-  std.get(child, 'schema', null);
-
-local isSingleRefSchema(schema) =
-  std.type(schema) == 'object' &&
-  std.objectFields(schema) == ['$ref'];
-local isArrayOfRefs(schema) =
-  std.type(schema) == 'object' &&
-  std.get(schema, 'type', null) == 'array' &&
-  isSingleRefSchema(std.get(schema, 'items', null));
-local hasArrayRefProperty(schema) =
-  std.type(schema) == 'object' &&
-  std.get(schema, 'type', null) == 'object' &&
-  std.objectHas(schema, 'properties') &&
-  std.any([
-    isArrayOfRefs(schema.properties[property])
-    for property in std.objectFields(schema.properties)
-  ]);
-local isListResponseSchema(schema) =
-  isArrayOfRefs(schema) || hasArrayRefProperty(schema);
+local endsWithString(value, suffix) =
+  std.length(value) >= std.length(suffix) &&
+  std.substr(value, std.length(value) - std.length(suffix), std.length(suffix)) == suffix;
+local isWatchPath(path) =
+  std.findSubstr('/watch/', path) != [];
+local isKubernetesDiscoveryOperation(operation) =
+  local operationId = std.get(operation, 'operationId', '');
+  std.startsWith(operationId, 'get') && endsWithString(operationId, 'APIResources');
+local schema = import 'inference-schema.libsonnet';
 
 function(spec)
   [
     path
     for path in std.objectFields(spec.paths)
     if std.objectHas(spec.paths[path], 'get')
+    for operation in [spec.paths[path].get]
+    if !isWatchPath(path)
+    if !isKubernetesDiscoveryOperation(operation)
     if !endsWithPathVar(path)
-    for response in [std.get(std.get(spec.paths[path].get, 'responses', {}), '200', null)]
+    for response in [std.get(std.get(operation, 'responses', {}), '200', null)]
     if response != null
-    for schema in [responseSchema(spec, response)]
-    if isListResponseSchema(schema)
+    for responseSchema in [schema.resolvedResponseSchema(spec, response)]
+    if schema.isListResponseSchema(responseSchema)
   ]

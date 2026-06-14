@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/marcbran/jpoet/pkg/jpoet"
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/inference"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/inference"
 )
 
 type Renderer struct {
-	fs fs.FS
+	imports []fs.FS
 }
 
 type Binding struct {
@@ -22,8 +22,8 @@ type Binding struct {
 	Value string
 }
 
-func NewRenderer(fs fs.FS) *Renderer {
-	return &Renderer{fs: fs}
+func NewRenderer(imports ...fs.FS) *Renderer {
+	return &Renderer{imports: imports}
 }
 
 func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON string) ([]inference.Bundle, error) {
@@ -35,20 +35,20 @@ func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON 
 		_ = os.RemoveAll(dir)
 	}()
 
-	opts := []jpoet.Option{
-		jpoet.FSImport(r.fs),
-		jpoet.SnippetInput(template, fmt.Sprintf("local spec = %s; (import %q)(spec)", specJSON, template)),
-		jpoet.Serialize(false),
-		jpoet.DirectoryOutput(dir),
-	}
+	input := jpoet.SnippetInput(template, fmt.Sprintf("local spec = %s; (import %q)(spec)", specJSON, template))
 	if previousJSON != "" {
-		opts[1] = jpoet.SnippetInput(template, fmt.Sprintf(
+		input = jpoet.SnippetInput(template, fmt.Sprintf(
 			"local spec = %s; local inferred = %s; (import %q)(spec, inferred)",
 			specJSON,
 			previousJSON,
 			template,
 		))
 	}
+	opts := make([]jpoet.Option, 0, len(r.imports)+3)
+	for _, imp := range r.imports {
+		opts = append(opts, jpoet.FSImport(imp))
+	}
+	opts = append(opts, input, jpoet.Serialize(false), jpoet.DirectoryOutput(dir))
 	err = jpoet.Eval(opts...)
 	if err != nil {
 		return nil, err
@@ -82,11 +82,15 @@ func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, e
 	}
 
 	var out bytes.Buffer
-	err := jpoet.Eval(
-		jpoet.FSImport(r.fs),
+	opts := make([]jpoet.Option, 0, len(r.imports)+2)
+	for _, imp := range r.imports {
+		opts = append(opts, jpoet.FSImport(imp))
+	}
+	opts = append(opts,
 		jpoet.SnippetInput(template, fmt.Sprintf("%s(import %q)(%s)", locals.String(), template, strings.Join(names, ", "))),
 		jpoet.WriterOutput(&out),
 	)
+	err := jpoet.Eval(opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,5 @@
 local mappingsFor = import 'list-detail-mappings.jsonnet';
-
-local responseRefName(ref) = std.strReplace(ref, '#/components/responses/', '');
-local schemaRefName(ref) = std.strReplace(ref, '#/components/schemas/', '');
+local schema = import 'inference-schema.libsonnet';
 
 local splitPath(path) = [part for part in std.split(path, '/') if part != ''];
 local pathParam(part) =
@@ -51,41 +49,9 @@ local bundlePathName(path) =
 local bundleName(mapping) =
   bundlePathName(mapping.sourcePath) + '--' + bundlePathName(mapping.targetPath);
 
-local responseSchema(spec, response) =
-  local resolved =
-    if std.type(response) == 'object' &&
-       std.objectHas(response, '$ref') &&
-       std.startsWith(response['$ref'], '#/components/responses/')
-    then spec.components.responses[responseRefName(response['$ref'])]
-    else response;
-  local content = std.get(resolved, 'content', {});
-  local contentTypes = std.objectFields(content);
-  local child =
-    if std.objectHas(content, 'application/json') then content['application/json']
-    else if std.length(contentTypes) > 0 then content[contentTypes[0]]
-    else {};
-  std.get(child, 'schema', null);
-
-local resolveSchema(spec, schema) =
-  if std.type(schema) == 'object' &&
-     std.objectHas(schema, '$ref') &&
-     std.startsWith(schema['$ref'], '#/components/schemas/')
-  then spec.components.schemas[schemaRefName(schema['$ref'])]
-  else schema;
-
-local arrayItemSchema(spec, schema, array) =
-  if std.length(array) == 0 then
-    resolveSchema(spec, std.get(schema, 'items', null))
-  else if std.length(array) == 1 &&
-          std.type(schema) == 'object' &&
-          std.objectHas(schema, 'properties') &&
-          std.objectHas(schema.properties, array[0]) then
-    resolveSchema(spec, std.get(schema.properties[array[0]], 'items', null))
-  else null;
-
 local bundle(spec, mapping) =
   local response = std.get(std.get(spec.paths[mapping.sourcePath].get, 'responses', {}), '200', null);
-  local schema = responseSchema(spec, response);
+  local responseSchema = schema.resolvedResponseSchema(spec, response);
   {
     sourcePath: mapping.sourcePath,
     targetPath: mapping.targetPath,
@@ -94,7 +60,7 @@ local bundle(spec, mapping) =
     inheritedParams: inheritedParams(mapping.sourcePath, mapping.targetPath),
     targetParams: pathParams(mapping.targetPath),
     missingParams: missingParams(mapping.sourcePath, mapping.targetPath),
-    itemSchema: arrayItemSchema(spec, schema, mapping.array),
+    itemSchema: schema.arrayItemSchema(spec, responseSchema, mapping.array),
   };
 
 function(spec, inferred=import 'list-detail-inference/results/all.jsonnet')
