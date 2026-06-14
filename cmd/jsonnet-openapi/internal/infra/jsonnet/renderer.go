@@ -31,7 +31,9 @@ func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON 
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(dir)
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
 
 	opts := []jpoet.Option{
 		jpoet.FSImport(r.fs),
@@ -75,7 +77,7 @@ func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, e
 	var locals bytes.Buffer
 	names := make([]string, 0, len(bindings))
 	for _, binding := range bindings {
-		locals.WriteString(fmt.Sprintf("local %s = %s; ", binding.Name, binding.Value))
+		fmt.Fprintf(&locals, "local %s = %s; ", binding.Name, binding.Value)
 		names = append(names, binding.Name)
 	}
 

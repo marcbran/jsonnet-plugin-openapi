@@ -56,7 +56,7 @@ func (s *Store) LoadAll(jobName string) (string, error) {
 	results.WriteString("[\n")
 	for _, file := range files {
 		base := filepath.Base(file)
-		imports.WriteString(fmt.Sprintf("  import %q,\n", base))
+		fmt.Fprintf(&imports, "  import %q,\n", base)
 		raw, err := os.ReadFile(file)
 		if err != nil {
 			return "", err

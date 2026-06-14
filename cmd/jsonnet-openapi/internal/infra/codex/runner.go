@@ -25,7 +25,9 @@ func (r *Runner) Exec(ctx context.Context, task inference.Task) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(dir)
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
 
 	inputPath := filepath.Join(dir, "input.json")
 	err = os.WriteFile(inputPath, task.Input, 0644)
