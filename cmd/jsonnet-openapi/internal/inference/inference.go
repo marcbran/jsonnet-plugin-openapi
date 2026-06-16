@@ -44,12 +44,15 @@ type Store interface {
 	LoadAll(jobName string) (string, error)
 }
 
+type Progress func(jobName, taskID string, cached bool)
+
 type Pipeline struct {
-	Jobs   []Job
-	Runner Runner
-	Store  Store
-	Force  bool
-	Limit  int
+	Jobs     []Job
+	Runner   Runner
+	Store    Store
+	Force    bool
+	Limit    int
+	Progress Progress
 }
 
 func (p Pipeline) Exec(ctx context.Context, spec SpecDocument) (Results, error) {
@@ -67,8 +70,14 @@ func (p Pipeline) Exec(ctx context.Context, spec SpecDocument) (Results, error) 
 					return nil, err
 				}
 				if ok {
+					if p.Progress != nil {
+						p.Progress(job.Name(), task.ID, true)
+					}
 					continue
 				}
+			}
+			if p.Progress != nil {
+				p.Progress(job.Name(), task.ID, false)
 			}
 			output, err := p.Runner.Exec(ctx, task)
 			if err != nil {

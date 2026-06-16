@@ -16,13 +16,16 @@ import (
 
 const defaultModel = "gpt-5.5"
 
+type Progress = inference.Progress
+
 type Input struct {
-	Spec    string
-	Out     string
-	WorkDir string
-	Model   string
-	Limit   int
-	Force   bool
+	Spec     string
+	Out      string
+	WorkDir  string
+	Model    string
+	Limit    int
+	Force    bool
+	Progress inference.Progress
 }
 
 type Output struct {
@@ -73,10 +76,11 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 			NewListDetailJob(renderer),
 			NewVarsJob(renderer),
 		},
-		Runner: codex.NewRunner(model),
-		Store:  store,
-		Force:  in.Force,
-		Limit:  in.Limit,
+		Runner:   codex.NewRunner(model),
+		Store:    store,
+		Force:    in.Force,
+		Limit:    in.Limit,
+		Progress: in.Progress,
 	}
 
 	spec, err := loader.LoadSpec(ctx, in.Spec)

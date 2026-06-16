@@ -65,13 +65,25 @@ func runListColumnsInfer(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	var progress listcolumns.Progress
+	if !quiet {
+		progress = func(jobName, taskID string, cached bool) {
+			if cached {
+				fmt.Fprintf(os.Stderr, "  [cached]  %s/%s\n", jobName, taskID)
+			} else {
+				fmt.Fprintf(os.Stderr, "  [running] %s/%s\n", jobName, taskID)
+			}
+		}
+	}
+
 	result, err := listcolumns.Exec(cmd.Context(), listcolumns.Input{
-		Spec:    args[0],
-		Out:     out,
-		WorkDir: workDir,
-		Model:   model,
-		Limit:   limit,
-		Force:   force,
+		Spec:     args[0],
+		Out:      out,
+		WorkDir:  workDir,
+		Model:    model,
+		Limit:    limit,
+		Force:    force,
+		Progress: progress,
 	})
 	if err != nil {
 		return err
