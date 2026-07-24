@@ -25,6 +25,7 @@ func (l *Loader) Parse(ctx context.Context, spec string) (internalopenapi.APISpe
 	if err != nil {
 		return internalopenapi.APISpec{}, err
 	}
+	pruneNonGETPaths(doc)
 	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
 		return internalopenapi.APISpec{}, err
@@ -54,6 +55,7 @@ func (l *Loader) Load(ctx context.Context, ref string) (internalopenapi.APISpec,
 	if err != nil {
 		return internalopenapi.APISpec{}, err
 	}
+	pruneNonGETPaths(doc)
 	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
 		return internalopenapi.APISpec{}, err
@@ -63,6 +65,22 @@ func (l *Loader) Load(ctx context.Context, ref string) (internalopenapi.APISpec,
 		return internalopenapi.APISpec{}, err
 	}
 	return api, nil
+}
+
+// pruneNonGETPaths drops path items with no GET operation before validation.
+// mapDocument only ever reads item.Get, so these are dead weight regardless -
+// pruning them first also avoids spurious path-uniqueness conflicts between
+// a GET path and a non-GET path that share the same shape but differently
+// named parameters.
+func pruneNonGETPaths(doc *openapi3.T) {
+	if doc.Paths == nil {
+		return
+	}
+	for path, item := range doc.Paths.Map() {
+		if item == nil || item.Get == nil {
+			doc.Paths.Delete(path)
+		}
+	}
 }
 
 func mapDocument(doc *openapi3.T) (internalopenapi.APISpec, error) {
