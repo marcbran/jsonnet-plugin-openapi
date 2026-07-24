@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.3.0...v0.3.1) (2026-07-24)
+
+
+### Bug Fixes
+
+* bump linter version ([#30](https://github.com/marcbran/jsonnet-plugin-openapi/issues/30)) ([beb62e2](https://github.com/marcbran/jsonnet-plugin-openapi/commit/beb62e2620d62c2bdfa7eac76a1faf5eb16f0e10))
+* prune non get ([#58](https://github.com/marcbran/jsonnet-plugin-openapi/issues/58)) ([043c9b1](https://github.com/marcbran/jsonnet-plugin-openapi/commit/043c9b1274608e3f7a4096aeb629d9f5e8685483))
+
 ## [0.3.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.2.0...v0.3.0) (2026-04-26)
 
 
