@@ -1,5 +1,18 @@
 local responseRefName(ref) = std.strReplace(ref, '#/components/responses/', '');
-local schemaRefName(ref) = std.strReplace(ref, '#/components/schemas/', '');
+
+local unescapeRefSegment(segment) =
+  std.strReplace(std.strReplace(segment, '~1', '/'), '~0', '~');
+
+local resolveSchemaRef(spec, ref) =
+  local path = std.strReplace(ref, '#/components/schemas/', '');
+  local segments = [unescapeRefSegment(s) for s in std.split(path, '/')];
+  std.foldl(
+    function(node, segment)
+      if std.type(node) == 'array' then node[std.parseInt(segment)]
+      else node[segment],
+    segments,
+    spec.components.schemas
+  );
 
 local responseSchema(spec, response) =
   local resolved =
@@ -44,7 +57,7 @@ local normalizeSchema(spec, schema, seen=[]) =
       'x-jsonnet-openapi-ref': ref,
       'x-jsonnet-openapi-recursiveRef': true,
     } else
-      normalizeSchema(spec, spec.components.schemas[schemaRefName(ref)], seen + [ref]) {
+      normalizeSchema(spec, resolveSchemaRef(spec, ref), seen + [ref]) {
         'x-jsonnet-openapi-ref': ref,
       }
   else if std.type(schema) == 'object' then {
@@ -65,7 +78,7 @@ local normalizeSchema(spec, schema, seen=[]) =
 
 local resolveSchema(spec, schema) =
   local ref = refString(schema);
-  if ref != null then normalizeSchema(spec, spec.components.schemas[schemaRefName(ref)], [ref]) {
+  if ref != null then normalizeSchema(spec, resolveSchemaRef(spec, ref), [ref]) {
     'x-jsonnet-openapi-ref': ref,
   } else normalizeSchema(spec, schema);
 
