@@ -2,12 +2,19 @@ package files
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 )
+
+// maxIDLen keeps result filenames under common filesystem component limits
+// (e.g. 255 bytes on APFS/ext4) even for task IDs built by concatenating
+// long, deeply nested API paths.
+const maxIDLen = 150
 
 type Store struct {
 	workDir string
@@ -74,5 +81,17 @@ func (s *Store) LoadAll(jobName string) (string, error) {
 }
 
 func (s *Store) resultPath(jobName string, taskID string) string {
-	return filepath.Join(s.workDir, jobName, "results", taskID+".json")
+	return filepath.Join(s.workDir, jobName, "results", safeFilename(taskID)+".json")
+}
+
+// safeFilename shortens taskID if it's too long to be a filesystem path
+// component, replacing the overflow with a content hash so the mapping
+// stays deterministic and collision-resistant.
+func safeFilename(id string) string {
+	if len(id) <= maxIDLen {
+		return id
+	}
+	sum := sha256.Sum256([]byte(id))
+	hash := hex.EncodeToString(sum[:])[:16]
+	return id[:maxIDLen-len(hash)-1] + "-" + hash
 }
