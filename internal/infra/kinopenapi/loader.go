@@ -2,11 +2,18 @@ package kinopenapi
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi2"
+	"github.com/getkin/kin-openapi/openapi2conv"
 	"github.com/getkin/kin-openapi/openapi3"
+	"sigs.k8s.io/yaml"
 
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
@@ -18,53 +25,113 @@ func NewLoader() *Loader {
 }
 
 func (l *Loader) Parse(ctx context.Context, spec string) (internalopenapi.APISpec, error) {
+	data := []byte(spec)
+	if isSwagger2(data) {
+		doc, err := loadSwagger2Data(ctx, data, nil)
+		if err != nil {
+			return internalopenapi.APISpec{}, err
+		}
+		return finishLoad(ctx, doc)
+	}
+
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
 	loader.Context = ctx
-	doc, err := loader.LoadFromData([]byte(spec))
+	doc, err := loader.LoadFromData(data)
 	if err != nil {
 		return internalopenapi.APISpec{}, err
 	}
+	return finishLoad(ctx, doc)
+}
+
+func (l *Loader) Load(ctx context.Context, ref string) (internalopenapi.APISpec, error) {
+	data, err := readRef(ref)
+	if err != nil {
+		return internalopenapi.APISpec{}, err
+	}
+	location, err := refLocation(ref)
+	if err != nil {
+		return internalopenapi.APISpec{}, err
+	}
+	if isSwagger2(data) {
+		doc, err := loadSwagger2Data(ctx, data, location)
+		if err != nil {
+			return internalopenapi.APISpec{}, err
+		}
+		return finishLoad(ctx, doc)
+	}
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.Context = ctx
+	doc, err := loader.LoadFromDataWithPath(data, location)
+	if err != nil {
+		return internalopenapi.APISpec{}, err
+	}
+	return finishLoad(ctx, doc)
+}
+
+// refLocation builds the base URL used to resolve relative external $refs,
+// mirroring how openapi3.Loader.LoadFromFile/LoadFromURI derive it.
+func refLocation(ref string) (*url.URL, error) {
+	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") {
+		return url.Parse(ref)
+	}
+	abs, err := filepath.Abs(ref)
+	if err != nil {
+		return nil, err
+	}
+	return &url.URL{Path: filepath.ToSlash(abs)}, nil
+}
+
+func finishLoad(ctx context.Context, doc *openapi3.T) (internalopenapi.APISpec, error) {
 	pruneNonGETPaths(doc)
-	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
+	err := doc.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
 		return internalopenapi.APISpec{}, err
 	}
 	return mapDocument(doc)
 }
 
-func (l *Loader) Load(ctx context.Context, ref string) (internalopenapi.APISpec, error) {
+func isSwagger2(data []byte) bool {
+	var probe struct {
+		Swagger string `json:"swagger"`
+	}
+	if err := yaml.Unmarshal(data, &probe); err != nil {
+		return false
+	}
+	return strings.HasPrefix(probe.Swagger, "2.")
+}
+
+func readRef(ref string) ([]byte, error) {
+	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") {
+		resp, err := http.Get(ref)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = resp.Body.Close() }()
+		return io.ReadAll(resp.Body)
+	}
+	abs, err := filepath.Abs(ref)
+	if err != nil {
+		return nil, err
+	}
+	return os.ReadFile(abs)
+}
+
+func loadSwagger2Data(ctx context.Context, data []byte, location *url.URL) (*openapi3.T, error) {
+	var doc2 openapi2.T
+	if err := yaml.Unmarshal(data, &doc2); err != nil {
+		return nil, fmt.Errorf("parsing swagger 2.0 document: %w", err)
+	}
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
 	loader.Context = ctx
-	var doc *openapi3.T
-	var err error
-	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") {
-		u, perr := url.Parse(ref)
-		if perr != nil {
-			return internalopenapi.APISpec{}, perr
-		}
-		doc, err = loader.LoadFromURI(u)
-	} else {
-		abs, perr := filepath.Abs(ref)
-		if perr != nil {
-			return internalopenapi.APISpec{}, perr
-		}
-		doc, err = loader.LoadFromFile(abs)
-	}
+	doc3, err := openapi2conv.ToV3WithLoader(&doc2, loader, location)
 	if err != nil {
-		return internalopenapi.APISpec{}, err
+		return nil, fmt.Errorf("converting swagger 2.0 to openapi 3: %w", err)
 	}
-	pruneNonGETPaths(doc)
-	err = doc.Validate(ctx, openapi3.DisableExamplesValidation())
-	if err != nil {
-		return internalopenapi.APISpec{}, err
-	}
-	api, err := mapDocument(doc)
-	if err != nil {
-		return internalopenapi.APISpec{}, err
-	}
-	return api, nil
+	return doc3, nil
 }
 
 // pruneNonGETPaths drops path items with no GET operation before validation.

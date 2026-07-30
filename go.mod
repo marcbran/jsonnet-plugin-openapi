@@ -10,6 +10,7 @@ require (
 	github.com/marcbran/jsonnet-plugin-jsonnet v0.3.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -39,5 +40,4 @@ require (
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	sigs.k8s.io/yaml v1.6.0 // indirect
 )
