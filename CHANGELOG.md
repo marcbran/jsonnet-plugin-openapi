@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.3.1...v0.4.0) (2026-07-30)
+
+
+### Features
+
+* support openapi v2 ([#68](https://github.com/marcbran/jsonnet-plugin-openapi/issues/68)) ([6b20c83](https://github.com/marcbran/jsonnet-plugin-openapi/commit/6b20c83aab2e9f422061812da01d6f4ae1fa7ffd))
+
+
+### Bug Fixes
+
+* prevent long filenames ([#64](https://github.com/marcbran/jsonnet-plugin-openapi/issues/64)) ([05e5adb](https://github.com/marcbran/jsonnet-plugin-openapi/commit/05e5adb774dd4013baaaea135d51d5be5686b9f6))
+
 ## [0.3.1](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.3.0...v0.3.1) (2026-07-24)
 
 
