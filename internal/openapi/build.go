@@ -124,6 +124,12 @@ func pathFormatFromTemplate(path string) (format string, names []string) {
 	}
 }
 
+var boilerplateHeaders = map[string]bool{
+	"accept":        true,
+	"content-type":  true,
+	"authorization": true,
+}
+
 func splitParams(params []Parameter) (query []ParameterSpec, header []ParameterSpec) {
 	query = []ParameterSpec{}
 	header = []ParameterSpec{}
@@ -133,6 +139,9 @@ func splitParams(params []Parameter) (query []ParameterSpec, header []ParameterS
 		case "query":
 			query = append(query, ps)
 		case "header":
+			if boilerplateHeaders[strings.ToLower(p.Name)] {
+				continue
+			}
 			header = append(header, ps)
 		}
 	}
