@@ -31,17 +31,17 @@ type Stage struct {
 	lastBatchOutputs []openapipkg.Output
 	lastBatchErr     string
 
-	listDetailLinksSpec       string
-	listDetailLinksOut        string
-	lastListDetailLinksOutput openapipkg.ListDetailLinksOutput
-	lastListDetailLinksErr    string
-	listDetailLinksWorkDir    string
+	linksSpec       string
+	linksOut        string
+	lastLinksOutput openapipkg.LinksOutput
+	lastLinksErr    string
+	linksWorkDir    string
 
-	listColumnsSpec       string
-	listColumnsOut        string
-	lastListColumnsOutput openapipkg.ListColumnsOutput
-	lastListColumnsErr    string
-	listColumnsWorkDir    string
+	columnsSpec       string
+	columnsOut        string
+	lastColumnsOutput openapipkg.ColumnsOutput
+	lastColumnsErr    string
+	columnsWorkDir    string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

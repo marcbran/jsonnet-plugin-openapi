@@ -46,10 +46,6 @@ local refString(schema) =
   then schema.allOf[0]['$ref']
   else null;
 
-local schemaIdentity(schema) =
-  local ref = refString(schema);
-  if ref != null then ref else std.get(schema, 'x-jsonnet-openapi-ref', null);
-
 local normalizeSchema(spec, schema, seen=[]) =
   local ref = refString(schema);
   if ref != null then
@@ -89,79 +85,70 @@ local isArraySchema(schema) =
   std.type(schema) == 'object' &&
   std.get(schema, 'type', null) == 'array';
 
-local isArrayOfRefs(schema) =
-  isArraySchema(schema) &&
-  schemaIdentity(std.get(schema, 'items', null)) != null;
+local effectiveProperties(schema) =
+  if std.type(schema) != 'object' then {}
+  else
+    local fromAllOf =
+      if std.objectHas(schema, 'allOf') && std.type(schema.allOf) == 'array' then
+        std.foldl(
+          function(acc, branch) acc + effectiveProperties(branch),
+          schema.allOf,
+          {}
+        )
+      else {};
+    fromAllOf + std.get(schema, 'properties', {});
 
-local hasArrayRefProperty(schema) =
-  std.type(schema) == 'object' &&
-  std.get(schema, 'type', null) == 'object' &&
-  std.objectHas(schema, 'properties') &&
-  std.any([
-    isArrayOfRefs(schema.properties[property])
-    for property in std.objectFields(schema.properties)
-  ]);
+local identityFields = [
+  'html_url',
+  'id',
+  'node_id',
+  'self',
+  'url',
+];
 
-local isListResponseSchema(schema) =
-  isArrayOfRefs(schema) || hasArrayRefProperty(schema);
+local isObjectLikeSchema(schema) =
+  std.type(schema) == 'object' && (
+    std.get(schema, 'type', null) == 'object' ||
+    std.objectHas(schema, 'properties') ||
+    (std.objectHas(schema, 'allOf') &&
+     std.any([isObjectLikeSchema(branch) for branch in schema.allOf]))
+  );
 
-local responseArrays(spec, schema) =
-  if isArraySchema(schema) then [
-    {
-      array: [],
-      itemSchema: resolveSchema(spec, std.get(schema, 'items', null)),
-    },
-  ]
-  else if std.type(schema) == 'object' &&
-          std.get(schema, 'type', null) == 'object' &&
-          std.objectHas(schema, 'properties') then [
-    {
-      array: [property],
-      itemSchema: resolveSchema(spec, std.get(schema.properties[property], 'items', null)),
-    }
-    for property in std.objectFields(schema.properties)
-    if isArraySchema(schema.properties[property])
-  ]
-  else [];
+local collectionItemsPath(schema) =
+  if schema == null || std.type(schema) != 'object' then null
+  else if isArraySchema(schema) then []
+  else
+    local properties = effectiveProperties(schema);
+    local names = std.objectFields(properties);
+    local arrayNames = [name for name in names if isArraySchema(properties[name])];
+    local objectArrayNames = [
+      name
+      for name in arrayNames
+      if isObjectLikeSchema(std.get(properties[name], 'items', null))
+    ];
+    local hasIdentity = std.any([std.member(identityFields, name) for name in names]);
+    if hasIdentity then null
+    else if std.length(objectArrayNames) == 1 then [objectArrayNames[0]]
+    else if std.length(objectArrayNames) == 0 && std.length(arrayNames) == 1 then [arrayNames[0]]
+    else null;
 
-local arrayRefs(schema) =
-  if isArrayOfRefs(schema) then [
-    {
-      array: [],
-      ref: schemaIdentity(schema.items),
-    },
-  ]
-  else if std.type(schema) == 'object' &&
-          std.get(schema, 'type', null) == 'object' &&
-          std.objectHas(schema, 'properties') then [
-    {
-      array: [property],
-      ref: schemaIdentity(schema.properties[property].items),
-    }
-    for property in std.objectFields(schema.properties)
-    if isArrayOfRefs(schema.properties[property])
-  ]
-  else [];
+local isCollectionResponseSchema(schema) = collectionItemsPath(schema) != null;
 
 local arrayItemSchema(spec, schema, array) =
   if std.length(array) == 0 then
     resolveSchema(spec, std.get(schema, 'items', null))
-  else if std.length(array) == 1 &&
-          std.type(schema) == 'object' &&
-          std.objectHas(schema, 'properties') &&
-          std.objectHas(schema.properties, array[0]) then
-    resolveSchema(spec, std.get(schema.properties[array[0]], 'items', null))
+  else if std.length(array) == 1 then
+    local properties = effectiveProperties(schema);
+    if std.objectHas(properties, array[0])
+    then resolveSchema(spec, std.get(properties[array[0]], 'items', null))
+    else null
   else null;
 
 {
-  responseSchema: responseSchema,
   resolveSchema: resolveSchema,
   resolvedResponseSchema: resolvedResponseSchema,
   isArraySchema: isArraySchema,
-  isArrayOfRefs: isArrayOfRefs,
-  hasArrayRefProperty: hasArrayRefProperty,
-  isListResponseSchema: isListResponseSchema,
-  responseArrays: responseArrays,
-  arrayRefs: arrayRefs,
+  collectionItemsPath: collectionItemsPath,
+  isCollectionResponseSchema: isCollectionResponseSchema,
   arrayItemSchema: arrayItemSchema,
 }

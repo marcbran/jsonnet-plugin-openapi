@@ -3,9 +3,9 @@ package jsonnetopenapi
 import (
 	"context"
 
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/columns"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/gen"
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listcolumns"
-	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/listdetaillinks"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/links"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
@@ -58,8 +58,8 @@ func (g *facade) Generate(ctx context.Context, in openapipkg.Input) (openapipkg.
 	}, nil
 }
 
-func (g *facade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
-	out, err := listdetaillinks.Exec(ctx, listdetaillinks.Input{
+func (g *facade) InferLinks(ctx context.Context, in openapipkg.LinksInput) (openapipkg.LinksOutput, error) {
+	out, err := links.Exec(ctx, links.Input{
 		Spec:    in.Spec,
 		Out:     in.Out,
 		WorkDir: in.WorkDir,
@@ -68,17 +68,17 @@ func (g *facade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDet
 		Force:   in.Force,
 	})
 	if err != nil {
-		return openapipkg.ListDetailLinksOutput{}, err
+		return openapipkg.LinksOutput{}, err
 	}
-	return openapipkg.ListDetailLinksOutput{
+	return openapipkg.LinksOutput{
 		Out:     out.Out,
 		WorkDir: out.WorkDir,
 		Files:   out.Files,
 	}, nil
 }
 
-func (g *facade) InferListColumns(ctx context.Context, in openapipkg.ListColumnsInput) (openapipkg.ListColumnsOutput, error) {
-	out, err := listcolumns.Exec(ctx, listcolumns.Input{
+func (g *facade) InferColumns(ctx context.Context, in openapipkg.ColumnsInput) (openapipkg.ColumnsOutput, error) {
+	out, err := columns.Exec(ctx, columns.Input{
 		Spec:    in.Spec,
 		Out:     in.Out,
 		WorkDir: in.WorkDir,
@@ -87,9 +87,9 @@ func (g *facade) InferListColumns(ctx context.Context, in openapipkg.ListColumns
 		Force:   in.Force,
 	})
 	if err != nil {
-		return openapipkg.ListColumnsOutput{}, err
+		return openapipkg.ColumnsOutput{}, err
 	}
-	return openapipkg.ListColumnsOutput{
+	return openapipkg.ColumnsOutput{
 		Out:     out.Out,
 		WorkDir: out.WorkDir,
 		Files:   out.Files,

@@ -1,0 +1,51 @@
+[
+   {
+      "at": [
+         "members"
+      ],
+      "keys": [
+         {
+            "const": "members"
+         },
+         {
+            "path": [
+               "userId"
+            ]
+         }
+      ],
+      "sourcePath": "/accounts/{id}",
+      "value": [
+         {
+            "const": "users"
+         },
+         {
+            "param": "userId",
+            "path": [
+               "userId"
+            ]
+         }
+      ]
+   },
+   {
+      "at": [ ],
+      "keys": [
+         {
+            "path": [
+               "id"
+            ]
+         }
+      ],
+      "sourcePath": "/users",
+      "value": [
+         {
+            "const": "users"
+         },
+         {
+            "param": "userId",
+            "path": [
+               "id"
+            ]
+         }
+      ]
+   }
+]

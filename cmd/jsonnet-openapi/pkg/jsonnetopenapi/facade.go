@@ -14,7 +14,7 @@ type Output struct {
 	Files  []string `json:"files"`
 }
 
-type ListDetailLinksInput struct {
+type LinksInput struct {
 	Spec    string `json:"spec"`
 	Out     string `json:"out,omitempty"`
 	WorkDir string `json:"workDir,omitempty"`
@@ -23,13 +23,13 @@ type ListDetailLinksInput struct {
 	Force   bool   `json:"force,omitempty"`
 }
 
-type ListDetailLinksOutput struct {
+type LinksOutput struct {
 	Out     string   `json:"out"`
 	WorkDir string   `json:"workDir"`
 	Files   []string `json:"files"`
 }
 
-type ListColumnsInput struct {
+type ColumnsInput struct {
 	Spec    string `json:"spec"`
 	Out     string `json:"out,omitempty"`
 	WorkDir string `json:"workDir,omitempty"`
@@ -38,7 +38,7 @@ type ListColumnsInput struct {
 	Force   bool   `json:"force,omitempty"`
 }
 
-type ListColumnsOutput struct {
+type ColumnsOutput struct {
 	Out     string   `json:"out"`
 	WorkDir string   `json:"workDir"`
 	Files   []string `json:"files"`
@@ -47,6 +47,6 @@ type ListColumnsOutput struct {
 type Facade interface {
 	Generate(ctx context.Context, in Input) (Output, error)
 	Batch(ctx context.Context, jobs []Input) ([]Output, error)
-	InferListDetailLinks(ctx context.Context, in ListDetailLinksInput) (ListDetailLinksOutput, error)
-	InferListColumns(ctx context.Context, in ListColumnsInput) (ListColumnsOutput, error)
+	InferLinks(ctx context.Context, in LinksInput) (LinksOutput, error)
+	InferColumns(ctx context.Context, in ColumnsInput) (ColumnsOutput, error)
 }
