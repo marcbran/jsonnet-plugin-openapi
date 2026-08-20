@@ -51,11 +51,18 @@ func (r *Runner) Exec(ctx context.Context, task inference.Task) ([]byte, error) 
 		"--skip-git-repo-check",
 		"--ephemeral",
 		"--sandbox", "read-only",
-		"--model", r.model,
+	}
+	// Only override the model when one was asked for. Otherwise let codex use
+	// the model from its own config, so there is no default here to go stale as
+	// models are released.
+	if r.model != "" {
+		args = append(args, "--model", r.model)
+	}
+	args = append(args,
 		"--output-schema", schemaPath,
 		"--output-last-message", outputPath,
 		"Read prompt.md and input.json. Return only JSON.",
-	}
+	)
 	cmd := exec.CommandContext(ctx, "codex", args...)
 	cmd.Stdin = strings.NewReader("")
 	var stderr bytes.Buffer

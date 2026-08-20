@@ -23,7 +23,7 @@ var columnsInferCmd = &cobra.Command{
 func init() {
 	columnsInferCmd.Flags().StringP("out", "o", "", "output columns JSON file (default: next to SPEC as <name>.columns.json)")
 	columnsInferCmd.Flags().String("workdir", "", "working directory for inference bundles and cached results (default: next to SPEC as <name>/)")
-	columnsInferCmd.Flags().String("model", "", "Codex model to use for inference (default: gpt-5.5)")
+	columnsInferCmd.Flags().String("model", "", "Codex model to use for inference (default: the model configured in codex)")
 	columnsInferCmd.Flags().Int("limit", 0, "maximum number of new Codex calls per inference step; 0 means unlimited")
 	columnsInferCmd.Flags().Bool("force", false, "re-run Codex calls even when result files already exist")
 	columnsCmd.AddCommand(columnsInferCmd)

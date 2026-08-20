@@ -14,8 +14,6 @@ import (
 	infrakinopenapi "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/infra/kinopenapi"
 )
 
-const defaultModel = "gpt-5.5"
-
 type Progress = inference.Progress
 
 type Input struct {
@@ -55,11 +53,6 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	model := in.Model
-	if model == "" {
-		model = defaultModel
-	}
-
 	loader := infrakinopenapi.NewLoader()
 	lib, err := Lib()
 	if err != nil {
@@ -77,7 +70,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 			NewLinksFromCollectionsJob(renderer),
 			NewLinkVarsJob(renderer),
 		},
-		Runner:   codex.NewRunner(model),
+		Runner:   codex.NewRunner(in.Model),
 		Store:    store,
 		Force:    in.Force,
 		Limit:    in.Limit,
