@@ -115,9 +115,9 @@ func (f *CLIFacade) Generate(ctx context.Context, in openapipkg.Input) (openapip
 	return out, nil
 }
 
-func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.ListDetailLinksInput) (openapipkg.ListDetailLinksOutput, error) {
+func (f *CLIFacade) InferLinks(ctx context.Context, in openapipkg.LinksInput) (openapipkg.LinksOutput, error) {
 	args := []string{
-		"list-detail-links",
+		"links",
 		"infer",
 		in.Spec,
 		"-q",
@@ -145,9 +145,9 @@ func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.List
 	err := cmd.Run()
 	if err != nil {
 		if stderr.String() != "" {
-			return openapipkg.ListDetailLinksOutput{}, errors.New(stderr.String())
+			return openapipkg.LinksOutput{}, errors.New(stderr.String())
 		}
-		return openapipkg.ListDetailLinksOutput{}, err
+		return openapipkg.LinksOutput{}, err
 	}
 	outPath := strings.TrimSpace(stdout.String())
 	workDir := in.WorkDir
@@ -156,7 +156,7 @@ func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.List
 		specName := strings.TrimSuffix(filepath.Base(in.Spec), filepath.Ext(in.Spec))
 		workDir = filepath.Join(specDir, specName)
 	}
-	return openapipkg.ListDetailLinksOutput{
+	return openapipkg.LinksOutput{
 		Out:     outPath,
 		WorkDir: workDir,
 		Files: []string{
@@ -165,9 +165,9 @@ func (f *CLIFacade) InferListDetailLinks(ctx context.Context, in openapipkg.List
 	}, nil
 }
 
-func (f *CLIFacade) InferListColumns(ctx context.Context, in openapipkg.ListColumnsInput) (openapipkg.ListColumnsOutput, error) {
+func (f *CLIFacade) InferColumns(ctx context.Context, in openapipkg.ColumnsInput) (openapipkg.ColumnsOutput, error) {
 	args := []string{
-		"list-columns",
+		"columns",
 		"infer",
 		in.Spec,
 		"-q",
@@ -195,9 +195,9 @@ func (f *CLIFacade) InferListColumns(ctx context.Context, in openapipkg.ListColu
 	err := cmd.Run()
 	if err != nil {
 		if stderr.String() != "" {
-			return openapipkg.ListColumnsOutput{}, errors.New(stderr.String())
+			return openapipkg.ColumnsOutput{}, errors.New(stderr.String())
 		}
-		return openapipkg.ListColumnsOutput{}, err
+		return openapipkg.ColumnsOutput{}, err
 	}
 	outPath := strings.TrimSpace(stdout.String())
 	workDir := in.WorkDir
@@ -206,7 +206,7 @@ func (f *CLIFacade) InferListColumns(ctx context.Context, in openapipkg.ListColu
 		specName := strings.TrimSuffix(filepath.Base(in.Spec), filepath.Ext(in.Spec))
 		workDir = filepath.Join(specDir, specName)
 	}
-	return openapipkg.ListColumnsOutput{
+	return openapipkg.ColumnsOutput{
 		Out:     outPath,
 		WorkDir: workDir,
 		Files: []string{
