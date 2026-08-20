@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.4.0...v0.5.0) (2026-08-20)
+
+
+### Features
+
+* unified link inference ([#75](https://github.com/marcbran/jsonnet-plugin-openapi/issues/75)) ([20b5c35](https://github.com/marcbran/jsonnet-plugin-openapi/commit/20b5c3548f95c1802d12fb19d933d91b219cc398))
+
+
+### Bug Fixes
+
+* ignore boilerplate headers ([#71](https://github.com/marcbran/jsonnet-plugin-openapi/issues/71)) ([54dd153](https://github.com/marcbran/jsonnet-plugin-openapi/commit/54dd1531e746bb0e7c4c8efc5932d08bb0d634b5))
+
 ## [0.4.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.3.1...v0.4.0) (2026-07-30)
 
 
