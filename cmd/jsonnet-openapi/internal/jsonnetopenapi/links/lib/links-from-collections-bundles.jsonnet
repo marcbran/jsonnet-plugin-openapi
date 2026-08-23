@@ -20,9 +20,17 @@ local bundleName(path) =
 
 local bundle(spec, sourcePath, detailPaths) =
   local response = std.get(std.get(spec.paths[sourcePath].get, 'responses', {}), '200', null);
+  local responseSchema = schema.resolvedResponseSchema(spec, response);
   {
     sourcePath: sourcePath,
-    responseSchema: schema.resolvedResponseSchema(spec, response),
+    responseSchema: responseSchema,
+    // Collection membership already means collectionItemsPath found exactly
+    // one unambiguous item array (see collection-paths.jsonnet), so there is
+    // nothing left to identify here -- unlike a resource link, where "at" can
+    // legitimately be any nested path and must be inferred. Handing it over
+    // lets the prompt skip that reasoning entirely; it only has to classify
+    // and pick a target.
+    at: schema.collectionItemsPath(responseSchema),
     detailPaths: [path for path in detailPaths if path != sourcePath],
   };
 
