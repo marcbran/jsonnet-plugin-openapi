@@ -20,12 +20,12 @@ Rules:
 
 const linksFromCollectionsPrompt = `Read input.json.
 
-The response at sourcePath is a list endpoint. Identify the array of items it returns and whether each item has a canonical detail GET endpoint among detailPaths.
+The response at sourcePath is a list endpoint. Decide whether its items have a canonical detail GET endpoint among detailPaths.
 
 Return only JSON matching the provided schema: an object with a "links" array. Emit at most one link for the list's primary item array; return an empty array when the items have no canonical detail GET.
 
 Rules:
-- "at" is a property path, relative to the response root, to the item array. If the response body is itself the array (the root is an array), use "at": []. Otherwise "at" is the path of the array property, for example ["data"] or ["items"]. "at" always crosses this array, so the link occurs once per item.
+- "at" is already given in input.json as "at". Copy it exactly into each link's "at" field; do not recompute or modify it. It is the item array, so the link occurs once per item.
 - Only emit a link when the array items are the resource's own records and have a clear canonical detail GET endpoint in detailPaths. Return an empty "links" array when the list items are events, stats/summary objects, search results, relationship records, activity-feed entries, or otherwise have no canonical detail GET path in detailPaths.
 - "keys" locates each item's link within the merged output. Because "at" crosses the item array, "keys" MUST end in a {"const": null, "path": [...]} segment whose path, relative to the array item, resolves to the item's stable identifier (for example ["id"]), so entries stay distinct. Do not add a leading const label unless it is needed to disambiguate.
 - "targetPath" must be exactly one path from detailPaths. Do not invent paths.
