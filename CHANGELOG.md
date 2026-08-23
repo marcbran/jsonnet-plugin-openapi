@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.5.0...v0.6.0) (2026-08-23)
+
+
+### Features
+
+* deterministic 'at' value for collections ([#77](https://github.com/marcbran/jsonnet-plugin-openapi/issues/77)) ([e3c395a](https://github.com/marcbran/jsonnet-plugin-openapi/commit/e3c395a29348937fb2bcadc06b00c9d7b1db1645))
+
 ## [0.5.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.4.0...v0.5.0) (2026-08-20)
 
 
