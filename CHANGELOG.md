@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.6.0...v0.6.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* correct model-echoed fields in output ([#80](https://github.com/marcbran/jsonnet-plugin-openapi/issues/80)) ([e3b8100](https://github.com/marcbran/jsonnet-plugin-openapi/commit/e3b8100522f9435fc636b606d6e65f2e4b1e7d96))
+
 ## [0.6.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.5.0...v0.6.0) (2026-08-23)
 
 
