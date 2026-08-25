@@ -29,6 +29,10 @@ func (j *LinksFromResourcesJob) Name() string {
 	return LinksFromResourcesJobName
 }
 
+func (j *LinksFromResourcesJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
+	return overrideLinksSourcePath(task.Input, output)
+}
+
 func (j *LinksFromResourcesJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
 	bundles, err := j.renderer.RenderBundles("links-from-resources-bundles.jsonnet", spec.JSON, "")
 	if err != nil {
@@ -59,6 +63,10 @@ func (j *LinksFromCollectionsJob) Name() string {
 	return LinksFromCollectionsJobName
 }
 
+func (j *LinksFromCollectionsJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
+	return overrideLinksSourcePath(task.Input, output)
+}
+
 func (j *LinksFromCollectionsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
 	bundles, err := j.renderer.RenderBundles("links-from-collections-bundles.jsonnet", spec.JSON, "")
 	if err != nil {
@@ -87,6 +95,10 @@ func NewLinkVarsJob(renderer inference.BundleRenderer) *LinkVarsJob {
 
 func (j *LinkVarsJob) Name() string {
 	return LinkVarsJobName
+}
+
+func (j *LinkVarsJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
+	return overrideEchoedFields(task.Input, output, "sourcePath", "targetPath", "at", "keys")
 }
 
 func (j *LinkVarsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
