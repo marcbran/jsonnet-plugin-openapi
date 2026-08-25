@@ -32,6 +32,10 @@ type Job interface {
 	Build(ctx context.Context, spec SpecDocument, previous Results) ([]Task, error)
 }
 
+type OutputTransformer interface {
+	TransformOutput(task Task, output []byte) ([]byte, error)
+}
+
 type Results map[string]string
 
 type Runner interface {
@@ -82,6 +86,12 @@ func (p Pipeline) Exec(ctx context.Context, spec SpecDocument) (Results, error) 
 			output, err := p.Runner.Exec(ctx, task)
 			if err != nil {
 				return nil, err
+			}
+			if transformer, ok := job.(OutputTransformer); ok {
+				output, err = transformer.TransformOutput(task, output)
+				if err != nil {
+					return nil, err
+				}
 			}
 			err = p.Store.Save(job.Name(), task.ID, output)
 			if err != nil {
