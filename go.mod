@@ -3,7 +3,7 @@ module github.com/marcbran/jsonnet-plugin-openapi
 go 1.26
 
 require (
-	github.com/getkin/kin-openapi v0.147.0
+	github.com/getkin/kin-openapi v0.149.0
 	github.com/google/go-jsonnet v0.22.0
 	github.com/marcbran/jpoet v0.20.0
 	github.com/marcbran/jsonnet-plugin-http v0.4.0
@@ -27,7 +27,7 @@ require (
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/oklog/run v1.2.0 // indirect
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
