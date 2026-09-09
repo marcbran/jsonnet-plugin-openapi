@@ -184,7 +184,9 @@ func (s *Stage) the_eval_has_no_error() *Stage {
 
 func (s *Stage) the_result_has_status(want string) *Stage {
 	require.NoError(s.t, s.evalErr)
-	got, ok := s.evalOut["status"].(string)
+	body, ok := s.evalOut["body"].(map[string]any)
+	require.True(s.t, ok)
+	got, ok := body["status"].(string)
 	require.True(s.t, ok)
 	require.Equal(s.t, want, got)
 	return s
