@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.6.0...v0.7.0) (2026-09-09)
+
+
+### Features
+
+* plugin with options pattern ([#87](https://github.com/marcbran/jsonnet-plugin-openapi/issues/87)) ([228bc32](https://github.com/marcbran/jsonnet-plugin-openapi/commit/228bc32e19dd6aac92f61cc9d1a0d7a7d9986dde))
+
+
+### Bug Fixes
+
+* correct model-echoed fields in output ([#80](https://github.com/marcbran/jsonnet-plugin-openapi/issues/80)) ([e3b8100](https://github.com/marcbran/jsonnet-plugin-openapi/commit/e3b8100522f9435fc636b606d6e65f2e4b1e7d96))
+* e2e test after response format changes ([#88](https://github.com/marcbran/jsonnet-plugin-openapi/issues/88)) ([4cf932f](https://github.com/marcbran/jsonnet-plugin-openapi/commit/4cf932f5583f501ae89817449e9e29f43adb1a3e))
+
 ## [0.6.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.5.0...v0.6.0) (2026-08-23)
 
 
