@@ -12,12 +12,12 @@ import (
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
 
-func Plugin() *jpoet.Plugin {
+func Plugin(opts ...jpoet.PluginOption) *jpoet.Plugin {
 	parser := kinopenapi.NewLoader()
 	return jpoet.NewPlugin("openapi", []jsonnet.NativeFunction{
 		APISpec(parser),
 		NestedSpec(parser),
-	})
+	}, opts...)
 }
 
 func APISpec(parser internalopenapi.Parser) jsonnet.NativeFunction {
