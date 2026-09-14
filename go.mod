@@ -7,7 +7,7 @@ require (
 	github.com/google/go-jsonnet v0.22.0
 	github.com/marcbran/jpoet v0.22.0
 	github.com/marcbran/jsonnet-plugin-http v0.5.0
-	github.com/marcbran/jsonnet-plugin-jsonnet v0.3.0
+	github.com/marcbran/jsonnet-plugin-jsonnet v0.4.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
 	sigs.k8s.io/yaml v1.6.0
@@ -22,6 +22,7 @@ require (
 	github.com/hashicorp/go-plugin v1.8.0 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/oasdiff/yaml v0.1.1 // indirect
