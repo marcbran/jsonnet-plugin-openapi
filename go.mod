@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/getkin/kin-openapi v0.149.0
 	github.com/google/go-jsonnet v0.22.0
-	github.com/marcbran/jpoet v0.22.0
+	github.com/marcbran/jpoet v0.23.0
 	github.com/marcbran/jsonnet-plugin-http v0.5.0
 	github.com/marcbran/jsonnet-plugin-jsonnet v0.4.0
 	github.com/spf13/cobra v1.10.2
@@ -28,6 +28,7 @@ require (
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/oklog/run v1.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
