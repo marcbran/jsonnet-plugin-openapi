@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/getkin/kin-openapi v0.149.0
 	github.com/google/go-jsonnet v0.22.0
-	github.com/marcbran/jpoet v0.23.0
+	github.com/marcbran/jpoet v0.23.1
 	github.com/marcbran/jsonnet-plugin-http v0.5.0
 	github.com/marcbran/jsonnet-plugin-jsonnet v0.4.0
 	github.com/spf13/cobra v1.10.2
