@@ -12,16 +12,25 @@ const ColumnsJobName = "columns-inference"
 //go:embed schemas/columns-inference-output.schema.json
 var columnsSchema []byte
 
-type ColumnsJob struct {
-	renderer inference.BundleRenderer
+type Renderer interface {
+	inference.BundleRenderer
+	RenderCheck(template string, input, output []byte) ([]byte, []string, error)
 }
 
-func NewColumnsJob(renderer inference.BundleRenderer) *ColumnsJob {
+type ColumnsJob struct {
+	renderer Renderer
+}
+
+func NewColumnsJob(renderer Renderer) *ColumnsJob {
 	return &ColumnsJob{renderer: renderer}
 }
 
 func (j *ColumnsJob) Name() string {
 	return ColumnsJobName
+}
+
+func (j *ColumnsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck("columns-output-check.jsonnet", task.Input, output)
 }
 
 func (j *ColumnsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {

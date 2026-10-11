@@ -9,8 +9,10 @@ Return only JSON matching the provided schema.
 Rules:
 - Choose roughly 3 to 6 columns.
 - Column paths must be property paths relative to the list item, for example ["id"] or ["owner", "name"].
+- If itemSchema is a scalar value rather than an object, return a single column with path [] to show the item itself.
 - Do not invent properties that are not supported by itemSchema.
-- Prefer human-readable names or titles, stable identifiers, status fields, timestamps, small counts, and concise scalar fields.
+- Prefer human-readable names or titles, status fields, timestamps, small counts, and concise scalar fields.
+- Operators recognize resources by name, not by id. Omit opaque identifier columns (ids, uuids, hashes, numeric database ids) whenever a human-readable identifying column is available.
 - Avoid descriptions, URLs, blobs, nested arrays, and large object values unless they are clearly useful as table columns.
 - Use priority "primary" for the main identifying column.
 - Prefer a human-readable name, title, label, slug, username, or email column as "primary" when available.
