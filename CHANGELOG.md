@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.7.0...v0.8.0) (2026-10-11)
+
+
+### Features
+
+* inference validation ([#96](https://github.com/marcbran/jsonnet-plugin-openapi/issues/96)) ([88fa0d9](https://github.com/marcbran/jsonnet-plugin-openapi/commit/88fa0d98583b0971f4decc1939570a97e4ffc568))
+
 ## [0.7.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.6.0...v0.7.0) (2026-09-09)
 
 
