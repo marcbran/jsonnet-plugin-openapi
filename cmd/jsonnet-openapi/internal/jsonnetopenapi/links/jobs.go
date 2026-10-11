@@ -11,6 +11,11 @@ const LinksFromResourcesJobName = "links-from-resources"
 const LinksFromCollectionsJobName = "links-from-collections"
 const LinkVarsJobName = "link-vars"
 
+type Renderer interface {
+	inference.BundleRenderer
+	RenderCheck(template string, input, output []byte) ([]byte, []string, error)
+}
+
 //go:embed schemas/link-inference-output.schema.json
 var linkSchema []byte
 
@@ -18,10 +23,10 @@ var linkSchema []byte
 var linkVarsSchema []byte
 
 type LinksFromResourcesJob struct {
-	renderer inference.BundleRenderer
+	renderer Renderer
 }
 
-func NewLinksFromResourcesJob(renderer inference.BundleRenderer) *LinksFromResourcesJob {
+func NewLinksFromResourcesJob(renderer Renderer) *LinksFromResourcesJob {
 	return &LinksFromResourcesJob{renderer: renderer}
 }
 
@@ -31,6 +36,10 @@ func (j *LinksFromResourcesJob) Name() string {
 
 func (j *LinksFromResourcesJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
 	return overrideLinksSourcePath(task.Input, output)
+}
+
+func (j *LinksFromResourcesJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck("links-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinksFromResourcesJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
@@ -52,10 +61,10 @@ func (j *LinksFromResourcesJob) Build(ctx context.Context, spec inference.SpecDo
 }
 
 type LinksFromCollectionsJob struct {
-	renderer inference.BundleRenderer
+	renderer Renderer
 }
 
-func NewLinksFromCollectionsJob(renderer inference.BundleRenderer) *LinksFromCollectionsJob {
+func NewLinksFromCollectionsJob(renderer Renderer) *LinksFromCollectionsJob {
 	return &LinksFromCollectionsJob{renderer: renderer}
 }
 
@@ -65,6 +74,10 @@ func (j *LinksFromCollectionsJob) Name() string {
 
 func (j *LinksFromCollectionsJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
 	return overrideLinksSourcePath(task.Input, output)
+}
+
+func (j *LinksFromCollectionsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck("links-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinksFromCollectionsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
@@ -86,10 +99,10 @@ func (j *LinksFromCollectionsJob) Build(ctx context.Context, spec inference.Spec
 }
 
 type LinkVarsJob struct {
-	renderer inference.BundleRenderer
+	renderer Renderer
 }
 
-func NewLinkVarsJob(renderer inference.BundleRenderer) *LinkVarsJob {
+func NewLinkVarsJob(renderer Renderer) *LinkVarsJob {
 	return &LinkVarsJob{renderer: renderer}
 }
 
@@ -99,6 +112,10 @@ func (j *LinkVarsJob) Name() string {
 
 func (j *LinkVarsJob) TransformOutput(task inference.Task, output []byte) ([]byte, error) {
 	return overrideEchoedFields(task.Input, output, "sourcePath", "targetPath", "at", "keys")
+}
+
+func (j *LinkVarsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck("link-vars-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinkVarsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {

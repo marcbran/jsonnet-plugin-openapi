@@ -134,6 +134,32 @@ local collectionItemsPath(schema) =
 
 local isCollectionResponseSchema(schema) = collectionItemsPath(schema) != null;
 
+local branchesOf(schema) =
+  [
+    branch
+    for field in ['allOf', 'oneOf', 'anyOf']
+    for branch in (if std.type(std.get(schema, field, null)) == 'array' then schema[field] else [])
+  ];
+
+local pathProperties(schema) =
+  if std.type(schema) != 'object' then {}
+  else std.foldl(function(acc, branch) acc + pathProperties(branch), branchesOf(schema), {}) + std.get(schema, 'properties', {});
+
+local schemaAtPath(spec, schema, path, crossedArray=false) =
+  if schema == null then { schema: schema, crossedArray: crossedArray }
+  else if std.length(path) == 0 then
+    if isArraySchema(schema)
+    then { schema: resolveSchema(spec, std.get(schema, 'items', null)), crossedArray: true }
+    else { schema: schema, crossedArray: crossedArray }
+  else
+    local propSchema = std.get(pathProperties(schema), path[0], null);
+    local isArray = propSchema != null && isArraySchema(propSchema);
+    local next =
+      if propSchema == null then null
+      else if isArray then resolveSchema(spec, std.get(propSchema, 'items', null))
+      else resolveSchema(spec, propSchema);
+    schemaAtPath(spec, next, std.slice(path, 1, std.length(path), 1), crossedArray || isArray);
+
 local arrayItemSchema(spec, schema, array) =
   if std.length(array) == 0 then
     resolveSchema(spec, std.get(schema, 'items', null))
@@ -150,5 +176,8 @@ local arrayItemSchema(spec, schema, array) =
   isArraySchema: isArraySchema,
   collectionItemsPath: collectionItemsPath,
   isCollectionResponseSchema: isCollectionResponseSchema,
+  branchesOf: branchesOf,
+  pathProperties: pathProperties,
+  schemaAtPath: schemaAtPath,
   arrayItemSchema: arrayItemSchema,
 }

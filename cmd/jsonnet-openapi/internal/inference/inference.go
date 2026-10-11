@@ -1,6 +1,10 @@
 package inference
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"strings"
+)
 
 type SpecDocument struct {
 	JSON string
@@ -34,6 +38,10 @@ type Job interface {
 
 type OutputTransformer interface {
 	TransformOutput(task Task, output []byte) ([]byte, error)
+}
+
+type OutputValidator interface {
+	ValidateOutput(task Task, output []byte) ([]byte, []string, error)
 }
 
 type Results map[string]string
@@ -83,15 +91,9 @@ func (p Pipeline) Exec(ctx context.Context, spec SpecDocument) (Results, error) 
 			if p.Progress != nil {
 				p.Progress(job.Name(), task.ID, false)
 			}
-			output, err := p.Runner.Exec(ctx, task)
+			output, err := p.execTask(ctx, job, task)
 			if err != nil {
 				return nil, err
-			}
-			if transformer, ok := job.(OutputTransformer); ok {
-				output, err = transformer.TransformOutput(task, output)
-				if err != nil {
-					return nil, err
-				}
 			}
 			err = p.Store.Save(job.Name(), task.ID, output)
 			if err != nil {
@@ -109,4 +111,52 @@ func (p Pipeline) Exec(ctx context.Context, spec SpecDocument) (Results, error) 
 		results[job.Name()] = all
 	}
 	return results, nil
+}
+
+func (p Pipeline) execTask(ctx context.Context, job Job, task Task) ([]byte, error) {
+	output, err := p.attempt(ctx, job, task)
+	if err != nil {
+		return nil, err
+	}
+	validator, ok := job.(OutputValidator)
+	if !ok {
+		return output, nil
+	}
+	valid, problems, err := validator.ValidateOutput(task, output)
+	if err != nil || len(problems) == 0 {
+		return valid, err
+	}
+	if p.Progress != nil {
+		p.Progress(job.Name(), task.ID+" (retry)", false)
+	}
+	retry := task
+	retry.Prompt = retryPrompt(task.Prompt, output, problems)
+	output, err = p.attempt(ctx, job, retry)
+	if err != nil {
+		return nil, err
+	}
+	valid, _, err = validator.ValidateOutput(task, output)
+	return valid, err
+}
+
+func (p Pipeline) attempt(ctx context.Context, job Job, task Task) ([]byte, error) {
+	output, err := p.Runner.Exec(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	if transformer, ok := job.(OutputTransformer); ok {
+		return transformer.TransformOutput(task, output)
+	}
+	return output, nil
+}
+
+func retryPrompt(prompt string, output []byte, problems []string) string {
+	var b strings.Builder
+	b.WriteString(prompt)
+	b.WriteString("\nA previous attempt returned the output below, which failed validation against input.json. Return a corrected result; drop any entry you cannot correct.\n\nProblems:\n")
+	for _, problem := range problems {
+		fmt.Fprintf(&b, "- %s\n", problem)
+	}
+	fmt.Fprintf(&b, "\nPrevious output:\n\n```json\n%s\n```\n", strings.TrimSpace(string(output)))
+	return b.String()
 }

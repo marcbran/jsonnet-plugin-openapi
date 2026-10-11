@@ -2,6 +2,7 @@ package jsonnet
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -95,4 +96,28 @@ func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, e
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+func (r *Renderer) RenderCheck(template string, input, output []byte) ([]byte, []string, error) {
+	rendered, err := r.RenderOutput(template,
+		Binding{Name: "input", Value: string(input)},
+		Binding{Name: "output", Value: string(output)},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	var checked struct {
+		Valid    json.RawMessage `json:"valid"`
+		Problems []string        `json:"problems"`
+	}
+	err = json.Unmarshal(rendered, &checked)
+	if err != nil {
+		return nil, nil, err
+	}
+	var valid bytes.Buffer
+	err = json.Compact(&valid, checked.Valid)
+	if err != nil {
+		return nil, nil, err
+	}
+	return valid.Bytes(), checked.Problems, nil
 }
