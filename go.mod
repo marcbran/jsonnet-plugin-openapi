@@ -3,7 +3,7 @@ module github.com/marcbran/jsonnet-plugin-openapi
 go 1.26.0
 
 require (
-	github.com/getkin/kin-openapi v0.151.0
+	github.com/getkin/kin-openapi v0.152.0
 	github.com/google/go-jsonnet v0.22.0
 	github.com/marcbran/jpoet v0.26.0
 	github.com/marcbran/jsonnet-plugin-http v0.5.0
