@@ -233,7 +233,7 @@ type NestedSpec struct {
 }
 
 type PathNode struct {
-	Operation *OperationSpec      `json:"operation,omitempty"`
+	Operation *OperationSpec       `json:"operation,omitempty"`
 	Children  map[string]*PathNode `json:"children,omitempty"`
 }
 
