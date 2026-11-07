@@ -51,7 +51,7 @@ func Generate(ctx context.Context, loader internalopenapi.Loader, in Input) (Out
 	if err != nil {
 		return Output{}, err
 	}
-	err = writeGeneratedLibsonnet(in.OutDir, nested, service, in.PkgRepo)
+	err = writeGeneratedLibsonnet(ctx, in.OutDir, nested, service, in.PkgRepo)
 	if err != nil {
 		return Output{}, err
 	}
@@ -70,7 +70,7 @@ type generationInput struct {
 	PkgRepo string                      `json:"pkgRepo"`
 }
 
-func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
+func writeGeneratedLibsonnet(ctx context.Context, outDir string, spec *internalopenapi.NestedSpec, service string, pkgRepo string) error {
 	apiJSON, err := json.Marshal(generationInput{
 		Spec:    spec,
 		Service: service,
@@ -79,7 +79,7 @@ func writeGeneratedLibsonnet(outDir string, spec *internalopenapi.NestedSpec, se
 	if err != nil {
 		return err
 	}
-	err = jpoet.Eval(
+	err = jpoet.Eval(ctx,
 		jpoet.FileImport([]string{}),
 		jpoet.FSImport(lib),
 		jpoet.WithPlugin(jsonnet.Plugin()),

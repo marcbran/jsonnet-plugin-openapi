@@ -83,7 +83,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	columns, err := renderer.RenderOutput("columns.jsonnet",
+	columns, err := renderer.RenderOutput(ctx, "columns.jsonnet",
 		infrajsonnet.Binding{Name: "spec", Value: spec.JSON},
 		infrajsonnet.Binding{Name: "inferred", Value: results[ColumnsJobName]},
 	)

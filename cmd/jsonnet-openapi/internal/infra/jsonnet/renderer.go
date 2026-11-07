@@ -2,6 +2,7 @@ package jsonnet
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -27,7 +28,7 @@ func NewRenderer(imports ...fs.FS) *Renderer {
 	return &Renderer{imports: imports}
 }
 
-func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON string) ([]inference.Bundle, error) {
+func (r *Renderer) RenderBundles(ctx context.Context, template string, specJSON string, previousJSON string) ([]inference.Bundle, error) {
 	dir, err := os.MkdirTemp("", "jsonnet-openapi-inference-*")
 	if err != nil {
 		return nil, err
@@ -50,7 +51,7 @@ func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON 
 		opts = append(opts, jpoet.FSImport(imp))
 	}
 	opts = append(opts, input, jpoet.Serialize(false), jpoet.DirectoryOutput(dir))
-	err = jpoet.Eval(opts...)
+	err = jpoet.Eval(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func (r *Renderer) RenderBundles(template string, specJSON string, previousJSON 
 	return bundles, nil
 }
 
-func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, error) {
+func (r *Renderer) RenderOutput(ctx context.Context, template string, bindings ...Binding) ([]byte, error) {
 	var locals bytes.Buffer
 	names := make([]string, 0, len(bindings))
 	for _, binding := range bindings {
@@ -91,15 +92,15 @@ func (r *Renderer) RenderOutput(template string, bindings ...Binding) ([]byte, e
 		jpoet.SnippetInput(template, fmt.Sprintf("%s(import %q)(%s)", locals.String(), template, strings.Join(names, ", "))),
 		jpoet.WriterOutput(&out),
 	)
-	err := jpoet.Eval(opts...)
+	err := jpoet.Eval(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out.Bytes(), nil
 }
 
-func (r *Renderer) RenderCheck(template string, input, output []byte) ([]byte, []string, error) {
-	rendered, err := r.RenderOutput(template,
+func (r *Renderer) RenderCheck(ctx context.Context, template string, input, output []byte) ([]byte, []string, error) {
+	rendered, err := r.RenderOutput(ctx, template,
 		Binding{Name: "input", Value: string(input)},
 		Binding{Name: "output", Value: string(output)},
 	)
