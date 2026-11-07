@@ -20,7 +20,7 @@ type Bundle struct {
 }
 
 type BundleRenderer interface {
-	RenderBundles(template string, specJSON string, previousJSON string) ([]Bundle, error)
+	RenderBundles(ctx context.Context, template string, specJSON string, previousJSON string) ([]Bundle, error)
 }
 
 type Task struct {
@@ -41,7 +41,7 @@ type OutputTransformer interface {
 }
 
 type OutputValidator interface {
-	ValidateOutput(task Task, output []byte) ([]byte, []string, error)
+	ValidateOutput(ctx context.Context, task Task, output []byte) ([]byte, []string, error)
 }
 
 type Results map[string]string
@@ -122,7 +122,7 @@ func (p Pipeline) execTask(ctx context.Context, job Job, task Task) ([]byte, err
 	if !ok {
 		return output, nil
 	}
-	valid, problems, err := validator.ValidateOutput(task, output)
+	valid, problems, err := validator.ValidateOutput(ctx, task, output)
 	if err != nil || len(problems) == 0 {
 		return valid, err
 	}
@@ -135,7 +135,7 @@ func (p Pipeline) execTask(ctx context.Context, job Job, task Task) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
-	valid, _, err = validator.ValidateOutput(task, output)
+	valid, _, err = validator.ValidateOutput(ctx, task, output)
 	return valid, err
 }
 

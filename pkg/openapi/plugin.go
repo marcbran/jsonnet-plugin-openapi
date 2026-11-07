@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/go-jsonnet"
-	"github.com/google/go-jsonnet/ast"
 	"github.com/marcbran/jpoet/pkg/jpoet"
 	kinopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/infra/kinopenapi"
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
@@ -14,22 +12,20 @@ import (
 
 func Plugin(opts ...jpoet.PluginOption) *jpoet.Plugin {
 	parser := kinopenapi.NewLoader()
-	return jpoet.NewPlugin("openapi", []jsonnet.NativeFunction{
-		APISpec(parser),
-		NestedSpec(parser),
-	}, opts...)
+	return jpoet.NewPlugin("openapi", nil, append([]jpoet.PluginOption{
+		jpoet.WithFunctions(APISpec(parser), NestedSpec(parser)),
+	}, opts...)...)
 }
 
-func APISpec(parser internalopenapi.Parser) jsonnet.NativeFunction {
-	return jsonnet.NativeFunction{
-		Name:   "apiSpec",
-		Params: ast.Identifiers{"spec"},
-		Func: func(input []any) (any, error) {
+func APISpec(parser internalopenapi.Parser) jpoet.Function {
+	return jpoet.Function{
+		Name: "apiSpec",
+		Func: func(ctx context.Context, input []any) (any, error) {
 			spec, err := parseSpecInput(input)
 			if err != nil {
 				return nil, err
 			}
-			api, err := parser.Parse(context.Background(), spec)
+			api, err := parser.Parse(ctx, spec)
 			if err != nil {
 				return nil, err
 			}
@@ -38,16 +34,15 @@ func APISpec(parser internalopenapi.Parser) jsonnet.NativeFunction {
 	}
 }
 
-func NestedSpec(parser internalopenapi.Parser) jsonnet.NativeFunction {
-	return jsonnet.NativeFunction{
-		Name:   "nestedSpec",
-		Params: ast.Identifiers{"spec"},
-		Func: func(input []any) (any, error) {
+func NestedSpec(parser internalopenapi.Parser) jpoet.Function {
+	return jpoet.Function{
+		Name: "nestedSpec",
+		Func: func(ctx context.Context, input []any) (any, error) {
 			spec, err := parseSpecInput(input)
 			if err != nil {
 				return nil, err
 			}
-			api, err := parser.Parse(context.Background(), spec)
+			api, err := parser.Parse(ctx, spec)
 			if err != nil {
 				return nil, err
 			}

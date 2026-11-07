@@ -13,7 +13,7 @@ const LinkVarsJobName = "link-vars"
 
 type Renderer interface {
 	inference.BundleRenderer
-	RenderCheck(template string, input, output []byte) ([]byte, []string, error)
+	RenderCheck(ctx context.Context, template string, input, output []byte) ([]byte, []string, error)
 }
 
 //go:embed schemas/link-inference-output.schema.json
@@ -38,12 +38,12 @@ func (j *LinksFromResourcesJob) TransformOutput(task inference.Task, output []by
 	return overrideLinksSourcePath(task.Input, output)
 }
 
-func (j *LinksFromResourcesJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
-	return j.renderer.RenderCheck("links-output-check.jsonnet", task.Input, output)
+func (j *LinksFromResourcesJob) ValidateOutput(ctx context.Context, task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck(ctx, "links-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinksFromResourcesJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
-	bundles, err := j.renderer.RenderBundles("links-from-resources-bundles.jsonnet", spec.JSON, "")
+	bundles, err := j.renderer.RenderBundles(ctx, "links-from-resources-bundles.jsonnet", spec.JSON, "")
 	if err != nil {
 		return nil, err
 	}
@@ -76,12 +76,12 @@ func (j *LinksFromCollectionsJob) TransformOutput(task inference.Task, output []
 	return overrideLinksSourcePath(task.Input, output)
 }
 
-func (j *LinksFromCollectionsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
-	return j.renderer.RenderCheck("links-output-check.jsonnet", task.Input, output)
+func (j *LinksFromCollectionsJob) ValidateOutput(ctx context.Context, task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck(ctx, "links-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinksFromCollectionsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
-	bundles, err := j.renderer.RenderBundles("links-from-collections-bundles.jsonnet", spec.JSON, "")
+	bundles, err := j.renderer.RenderBundles(ctx, "links-from-collections-bundles.jsonnet", spec.JSON, "")
 	if err != nil {
 		return nil, err
 	}
@@ -114,12 +114,12 @@ func (j *LinkVarsJob) TransformOutput(task inference.Task, output []byte) ([]byt
 	return overrideEchoedFields(task.Input, output, "sourcePath", "targetPath", "at", "keys")
 }
 
-func (j *LinkVarsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
-	return j.renderer.RenderCheck("link-vars-output-check.jsonnet", task.Input, output)
+func (j *LinkVarsJob) ValidateOutput(ctx context.Context, task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck(ctx, "link-vars-output-check.jsonnet", task.Input, output)
 }
 
 func (j *LinkVarsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
-	bundles, err := j.renderer.RenderBundles("link-vars-bundles.jsonnet", spec.JSON, mergedLinkResults(previous))
+	bundles, err := j.renderer.RenderBundles(ctx, "link-vars-bundles.jsonnet", spec.JSON, mergedLinkResults(previous))
 	if err != nil {
 		return nil, err
 	}

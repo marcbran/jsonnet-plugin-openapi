@@ -14,7 +14,7 @@ var columnsSchema []byte
 
 type Renderer interface {
 	inference.BundleRenderer
-	RenderCheck(template string, input, output []byte) ([]byte, []string, error)
+	RenderCheck(ctx context.Context, template string, input, output []byte) ([]byte, []string, error)
 }
 
 type ColumnsJob struct {
@@ -29,12 +29,12 @@ func (j *ColumnsJob) Name() string {
 	return ColumnsJobName
 }
 
-func (j *ColumnsJob) ValidateOutput(task inference.Task, output []byte) ([]byte, []string, error) {
-	return j.renderer.RenderCheck("columns-output-check.jsonnet", task.Input, output)
+func (j *ColumnsJob) ValidateOutput(ctx context.Context, task inference.Task, output []byte) ([]byte, []string, error) {
+	return j.renderer.RenderCheck(ctx, "columns-output-check.jsonnet", task.Input, output)
 }
 
 func (j *ColumnsJob) Build(ctx context.Context, spec inference.SpecDocument, previous inference.Results) ([]inference.Task, error) {
-	bundles, err := j.renderer.RenderBundles("columns-inference-bundles.jsonnet", spec.JSON, "")
+	bundles, err := j.renderer.RenderBundles(ctx, "columns-inference-bundles.jsonnet", spec.JSON, "")
 	if err != nil {
 		return nil, err
 	}

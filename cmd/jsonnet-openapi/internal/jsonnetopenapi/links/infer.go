@@ -85,7 +85,7 @@ func Exec(ctx context.Context, in Input) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	links, err := renderer.RenderOutput("links.jsonnet",
+	links, err := renderer.RenderOutput(ctx, "links.jsonnet",
 		infrajsonnet.Binding{Name: "spec", Value: spec.JSON},
 		infrajsonnet.Binding{Name: "inferred", Value: mergedLinkResults(results)},
 		infrajsonnet.Binding{Name: "varsInferred", Value: results[LinkVarsJobName]},

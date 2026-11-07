@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -43,7 +44,7 @@ func (s *SpecStage) a_fixture_spec(name string) *SpecStage {
 }
 
 func (s *SpecStage) the_jsonnet_api_spec_is_evaluated() *SpecStage {
-	s.err = jpoet.Eval(
+	s.err = jpoet.Eval(context.Background(),
 		jpoet.WithPlugin(openapiplugin.Plugin()),
 		jpoet.SnippetInput("test.jsonnet", fmt.Sprintf(`std.native('invoke:openapi')('apiSpec', [%q])`, s.spec)),
 		jpoet.ValueOutput(&s.out),
@@ -53,7 +54,7 @@ func (s *SpecStage) the_jsonnet_api_spec_is_evaluated() *SpecStage {
 }
 
 func (s *SpecStage) the_jsonnet_nested_spec_is_evaluated() *SpecStage {
-	s.err = jpoet.Eval(
+	s.err = jpoet.Eval(context.Background(),
 		jpoet.WithPlugin(openapiplugin.Plugin()),
 		jpoet.SnippetInput("test.jsonnet", fmt.Sprintf(`std.native('invoke:openapi')('nestedSpec', [%q])`, s.spec)),
 		jpoet.ValueOutput(&s.out),
