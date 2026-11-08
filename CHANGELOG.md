@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.7.0...v0.8.0) (2026-11-08)
+
+
+### Features
+
+* add arcourse-openapi package ([#107](https://github.com/marcbran/jsonnet-plugin-openapi/issues/107)) ([50660a5](https://github.com/marcbran/jsonnet-plugin-openapi/commit/50660a5e025a5374ae37a0fc6bdc9a39d59f202d))
+* inference validation ([#96](https://github.com/marcbran/jsonnet-plugin-openapi/issues/96)) ([88fa0d9](https://github.com/marcbran/jsonnet-plugin-openapi/commit/88fa0d98583b0971f4decc1939570a97e4ffc568))
+* pass the evaluation context to plugin calls ([#105](https://github.com/marcbran/jsonnet-plugin-openapi/issues/105)) ([313ab39](https://github.com/marcbran/jsonnet-plugin-openapi/commit/313ab39e75d3ebbf633982494bb9ba1cf3769dae))
+
 ## [0.7.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.6.0...v0.7.0) (2026-09-09)
 
 
