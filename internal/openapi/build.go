@@ -134,18 +134,67 @@ func splitParams(params []Parameter) (query []ParameterSpec, header []ParameterS
 	query = []ParameterSpec{}
 	header = []ParameterSpec{}
 	for _, p := range params {
-		ps := ParameterSpec{Name: p.Name, Required: p.Required}
 		switch p.In {
 		case "query":
-			query = append(query, ps)
+			query = append(query, parameterSpec(p, explodesToRepeatedKeys(p)))
 		case "header":
 			if boilerplateHeaders[strings.ToLower(p.Name)] {
 				continue
 			}
-			header = append(header, ps)
+			header = append(header, parameterSpec(p, false))
 		}
 	}
 	return query, header
+}
+
+func explodesToRepeatedKeys(p Parameter) bool {
+	if p.Style != "" && p.Style != "form" {
+		return false
+	}
+	return p.Explode == nil || *p.Explode
+}
+
+func parameterSpec(p Parameter, allowArray bool) ParameterSpec {
+	ps := ParameterSpec{Name: p.Name, Required: p.Required, Type: "string"}
+	if p.Schema == nil {
+		return ps
+	}
+	if p.Schema.Type == "array" {
+		if !allowArray || p.Schema.Items == nil {
+			return ps
+		}
+		item := scalarSpec(*p.Schema.Items)
+		ps.Type = "array"
+		ps.Items = &item
+		return ps
+	}
+	scalar := scalarSpec(*p.Schema)
+	ps.Type = scalar.Type
+	ps.Enum = scalar.Enum
+	return ps
+}
+
+func scalarSpec(s Schema) ItemSpec {
+	switch s.Type {
+	case "integer", "number":
+		return ItemSpec{Type: "number", Enum: enumValues(s.Enum)}
+	case "boolean":
+		return ItemSpec{Type: "boolean"}
+	case "string":
+		return ItemSpec{Type: "string", Enum: enumValues(s.Enum)}
+	default:
+		return ItemSpec{Type: "string"}
+	}
+}
+
+func enumValues(values []any) []any {
+	var out []any
+	for _, v := range values {
+		if v != nil {
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 func pathSegments(path string) []string {
@@ -247,8 +296,16 @@ type OperationSpec struct {
 }
 
 type ParameterSpec struct {
-	Name     string `json:"name"`
-	Required bool   `json:"required"`
+	Name     string    `json:"name"`
+	Required bool      `json:"required"`
+	Type     string    `json:"type"`
+	Items    *ItemSpec `json:"items,omitempty"`
+	Enum     []any     `json:"enum,omitempty"`
+}
+
+type ItemSpec struct {
+	Type string `json:"type"`
+	Enum []any  `json:"enum,omitempty"`
 }
 
 func (n *PathNode) insert(segments []string, op *OperationSpec) error {

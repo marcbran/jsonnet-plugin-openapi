@@ -115,8 +115,46 @@ func TestBuildNestedSpec(t *testing.T) {
 							PathTemplate: "/q",
 							PathFormat:   "/q",
 							PathArgNames: []string{},
-							QueryParams:  []ParameterSpec{{Name: "q", Required: false}},
-							HeaderParams: []ParameterSpec{{Name: "X-Trace", Required: true}},
+							QueryParams:  []ParameterSpec{{Name: "q", Required: false, Type: "string"}},
+							HeaderParams: []ParameterSpec{{Name: "X-Trace", Required: true, Type: "string"}},
+						}),
+					},
+				},
+			},
+		},
+		{
+			name: "parameter schemas map to spec types",
+			api: APISpec{
+				Paths: []PathItem{{
+					Path: "/t",
+					Get: &Operation{Parameters: []Parameter{
+						{Name: "a_limit", In: "query", Schema: &Schema{Type: "integer"}},
+						{Name: "b_status", In: "query", Schema: &Schema{Type: "string", Enum: []any{"open", "closed", nil}}},
+						{Name: "c_flag", In: "query", Schema: &Schema{Type: "boolean"}},
+						{Name: "d_ids", In: "query", Schema: &Schema{Type: "array", Items: &Schema{Type: "integer", Enum: []any{float64(1), float64(2)}}}},
+						{Name: "e_csv", In: "query", Explode: new(false), Schema: &Schema{Type: "array", Items: &Schema{Type: "string"}}},
+						{Name: "f_filter", In: "query", Style: "deepObject", Schema: &Schema{Type: "object"}},
+						{Name: "X-List", In: "header", Schema: &Schema{Type: "array", Items: &Schema{Type: "string"}}},
+					}},
+				}},
+			},
+			wantSpec: &NestedSpec{
+				Paths: &PathNode{
+					Children: map[string]*PathNode{
+						"t": pathLeaf(&OperationSpec{
+							ID:           "get_t",
+							PathTemplate: "/t",
+							PathFormat:   "/t",
+							PathArgNames: []string{},
+							QueryParams: []ParameterSpec{
+								{Name: "a_limit", Type: "number"},
+								{Name: "b_status", Type: "string", Enum: []any{"open", "closed"}},
+								{Name: "c_flag", Type: "boolean"},
+								{Name: "d_ids", Type: "array", Items: &ItemSpec{Type: "number", Enum: []any{float64(1), float64(2)}}},
+								{Name: "e_csv", Type: "string"},
+								{Name: "f_filter", Type: "string"},
+							},
+							HeaderParams: []ParameterSpec{{Name: "X-List", Type: "string"}},
 						}),
 					},
 				},
@@ -176,7 +214,7 @@ func TestBuildNestedSpec(t *testing.T) {
 							PathTemplate: "/q",
 							PathFormat:   "/q",
 							PathArgNames: []string{},
-							QueryParams:  []ParameterSpec{{Name: "q", Required: true}},
+							QueryParams:  []ParameterSpec{{Name: "q", Required: true, Type: "string"}},
 							HeaderParams: []ParameterSpec{},
 						}),
 					},

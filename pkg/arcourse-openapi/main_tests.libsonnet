@@ -1027,7 +1027,7 @@ local arcourseOpenapi = import './main.libsonnet';
       },
     },
     {
-      name: 'optional query params get a matching _paramSpecs entry with a null default, read from $._params in the request',
+      name: 'optional query params get a typed _paramSpecs entry with a null default, read from $._params in the request',
       input:: function()
         local spec = {
           paths: {
@@ -1036,8 +1036,9 @@ local arcourseOpenapi = import './main.libsonnet';
                 operation: {
                   pathFormat: '/incidents',
                   queryParams: [
-                    { name: 'offset', required: false },
+                    { name: 'offset', required: false, type: 'number' },
                     { name: 'limit', required: false },
+                    { name: 'statuses', required: false, type: 'array', items: { type: 'string', enum: ['open', 'closed'] } },
                   ],
                 },
               },
@@ -1079,10 +1080,11 @@ local arcourseOpenapi = import './main.libsonnet';
       expected: {
         paramSpecsHide: 1,
         paramSpecs: [
-          { name: 'offset', type: 'string', default: null },
+          { name: 'offset', type: 'number', default: null },
           { name: 'limit', type: 'string', default: null },
+          { name: 'statuses', type: 'array', items: { type: 'string', enum: ['open', 'closed'] }, default: null },
         ],
-        queryFieldNames: ['offset', 'limit'],
+        queryFieldNames: ['offset', 'limit', 'statuses'],
         offsetExprKind: 'Apply',
         offsetCalleeId: 'get',
         offsetSourceTargetId: '_params',

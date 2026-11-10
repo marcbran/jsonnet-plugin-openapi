@@ -6,7 +6,8 @@
           "headerParams": [
             {
               "name": "X-Trace-Id",
-              "required": false
+              "required": false,
+              "type": "string"
             }
           ],
           "id": "listUserProfiles",

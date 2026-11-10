@@ -13,7 +13,10 @@
           {
             "in": "path",
             "name": "userId",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       },

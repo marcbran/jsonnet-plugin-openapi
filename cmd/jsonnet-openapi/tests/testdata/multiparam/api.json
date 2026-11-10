@@ -7,22 +7,34 @@
           {
             "in": "query",
             "name": "zebra",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "in": "query",
             "name": "alpha",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "in": "header",
             "name": "HeaderB",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "in": "header",
             "name": "HeaderA",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       },
