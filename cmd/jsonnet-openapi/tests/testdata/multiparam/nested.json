@@ -6,11 +6,13 @@
           "headerParams": [
             {
               "name": "HeaderA",
-              "required": false
+              "required": false,
+              "type": "string"
             },
             {
               "name": "HeaderB",
-              "required": false
+              "required": false,
+              "type": "string"
             }
           ],
           "id": "listItems",
@@ -20,11 +22,13 @@
           "queryParams": [
             {
               "name": "alpha",
-              "required": false
+              "required": false,
+              "type": "string"
             },
             {
               "name": "zebra",
-              "required": false
+              "required": false,
+              "type": "string"
             }
           ]
         }

@@ -168,22 +168,14 @@ func mapDocument(doc *openapi3.T) (internalopenapi.APISpec, error) {
 			if p == nil || p.Value == nil {
 				continue
 			}
-			pathParams = append(pathParams, internalopenapi.Parameter{
-				Name:     p.Value.Name,
-				In:       string(p.Value.In),
-				Required: p.Value.Required,
-			})
+			pathParams = append(pathParams, mapParameter(p.Value))
 		}
 		getParams := make([]internalopenapi.Parameter, 0, len(item.Get.Parameters))
 		for _, p := range item.Get.Parameters {
 			if p == nil || p.Value == nil {
 				continue
 			}
-			getParams = append(getParams, internalopenapi.Parameter{
-				Name:     p.Value.Name,
-				In:       string(p.Value.In),
-				Required: p.Value.Required,
-			})
+			getParams = append(getParams, mapParameter(p.Value))
 		}
 		api.Paths = append(api.Paths, internalopenapi.PathItem{
 			Path:       path,
@@ -195,4 +187,45 @@ func mapDocument(doc *openapi3.T) (internalopenapi.APISpec, error) {
 		})
 	}
 	return api, nil
+}
+
+func mapParameter(p *openapi3.Parameter) internalopenapi.Parameter {
+	return internalopenapi.Parameter{
+		Name:     p.Name,
+		In:       string(p.In),
+		Required: p.Required,
+		Style:    p.Style,
+		Explode:  p.Explode,
+		Schema:   mapSchema(p.Schema, true),
+	}
+}
+
+func mapSchema(ref *openapi3.SchemaRef, withItems bool) *internalopenapi.Schema {
+	if ref == nil || ref.Value == nil {
+		return nil
+	}
+	s := &internalopenapi.Schema{
+		Type: schemaType(ref.Value.Type),
+		Enum: ref.Value.Enum,
+	}
+	if withItems && s.Type == "array" {
+		s.Items = mapSchema(ref.Value.Items, false)
+	}
+	return s
+}
+
+func schemaType(types *openapi3.Types) string {
+	if types == nil {
+		return ""
+	}
+	var nonNull []string
+	for _, t := range types.Slice() {
+		if t != "null" {
+			nonNull = append(nonNull, t)
+		}
+	}
+	if len(nonNull) != 1 {
+		return ""
+	}
+	return nonNull[0]
 }

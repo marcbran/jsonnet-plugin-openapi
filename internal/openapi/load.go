@@ -28,7 +28,16 @@ type Operation struct {
 }
 
 type Parameter struct {
-	Name     string `json:"name"`
-	In       string `json:"in"`
-	Required bool   `json:"required"`
+	Name     string  `json:"name"`
+	In       string  `json:"in"`
+	Required bool    `json:"required"`
+	Style    string  `json:"style,omitempty"`
+	Explode  *bool   `json:"explode,omitempty"`
+	Schema   *Schema `json:"schema,omitempty"`
+}
+
+type Schema struct {
+	Type  string  `json:"type,omitempty"`
+	Enum  []any   `json:"enum,omitempty"`
+	Items *Schema `json:"items,omitempty"`
 }
