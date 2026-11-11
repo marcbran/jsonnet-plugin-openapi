@@ -6,6 +6,7 @@ import (
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/columns"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/gen"
 	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/links"
+	"github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/internal/jsonnetopenapi/params"
 	openapipkg "github.com/marcbran/jsonnet-plugin-openapi/cmd/jsonnet-openapi/pkg/jsonnetopenapi"
 	internalopenapi "github.com/marcbran/jsonnet-plugin-openapi/internal/openapi"
 )
@@ -90,6 +91,25 @@ func (g *facade) InferColumns(ctx context.Context, in openapipkg.ColumnsInput) (
 		return openapipkg.ColumnsOutput{}, err
 	}
 	return openapipkg.ColumnsOutput{
+		Out:     out.Out,
+		WorkDir: out.WorkDir,
+		Files:   out.Files,
+	}, nil
+}
+
+func (g *facade) InferParams(ctx context.Context, in openapipkg.ParamsInput) (openapipkg.ParamsOutput, error) {
+	out, err := params.Exec(ctx, params.Input{
+		Spec:    in.Spec,
+		Out:     in.Out,
+		WorkDir: in.WorkDir,
+		Model:   in.Model,
+		Limit:   in.Limit,
+		Force:   in.Force,
+	})
+	if err != nil {
+		return openapipkg.ParamsOutput{}, err
+	}
+	return openapipkg.ParamsOutput{
 		Out:     out.Out,
 		WorkDir: out.WorkDir,
 		Files:   out.Files,
