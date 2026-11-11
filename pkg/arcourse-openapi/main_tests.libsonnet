@@ -1157,13 +1157,14 @@ local arcourseOpenapi = import './main.libsonnet';
       expected: { bodyFieldNames: ['response', 'data'] },
     },
     {
-      name: 'paginationParams mark list-node param specs with the pagination role, sortParams mark sort params on every node',
+      name: 'list nodes merge inferred filter and shaping roles under sort and pagination roles, other nodes only get sort roles',
       input:: function()
         local params = [
           { name: 'offset', required: false, type: 'number' },
           { name: 'status', required: false },
           { name: 'sort_by', required: false },
           { name: 'filter[sort_by]', required: false },
+          { name: 'include[]', required: false },
         ];
         local spec = {
           paths: {
@@ -1179,6 +1180,19 @@ local arcourseOpenapi = import './main.libsonnet';
           pagination: '{ links+: { pagination: {} } }',
           paginationParams: ['offset', 'limit'],
           columns: [{ sourcePath: '/incidents', array: ['incidents'] }],
+          params: [
+            {
+              sourcePath: '/incidents',
+              params: [
+                { name: 'offset', role: 'filter' },
+                { name: 'status', role: 'filter' },
+                { name: 'sort_by', role: 'other' },
+                { name: 'filter[sort_by]', role: 'filter' },
+                { name: 'include[]', role: 'shaping' },
+              ],
+            },
+            { sourcePath: '/summary', params: [{ name: 'status', role: 'filter' }] },
+          ],
           data+: { spec: spec },
         }._view.jsonnet;
         local manifestLiteral(expr) =
@@ -1199,15 +1213,17 @@ local arcourseOpenapi = import './main.libsonnet';
       expected: {
         incidents: [
           { name: 'offset', role: 'pagination', type: 'number', default: null },
-          { name: 'status', type: 'string', default: null },
+          { name: 'status', role: 'filter', type: 'string', default: null },
           { name: 'sort_by', role: 'sort', type: 'string', default: null },
-          { name: 'filter[sort_by]', type: 'string', default: null },
+          { name: 'filter[sort_by]', role: 'filter', type: 'string', default: null },
+          { name: 'include[]', role: 'shaping', type: 'string', default: null },
         ],
         summary: [
           { name: 'offset', type: 'number', default: null },
           { name: 'status', type: 'string', default: null },
           { name: 'sort_by', role: 'sort', type: 'string', default: null },
           { name: 'filter[sort_by]', type: 'string', default: null },
+          { name: 'include[]', type: 'string', default: null },
         ],
       },
     },

@@ -42,6 +42,12 @@ type Stage struct {
 	lastColumnsOutput openapipkg.ColumnsOutput
 	lastColumnsErr    string
 	columnsWorkDir    string
+
+	paramsSpec       string
+	paramsOut        string
+	lastParamsOutput openapipkg.ParamsOutput
+	lastParamsErr    string
+	paramsWorkDir    string
 }
 
 func scenario(t *testing.T) (*Stage, *Stage, *Stage) {

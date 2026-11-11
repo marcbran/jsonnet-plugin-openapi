@@ -1,7 +1,7 @@
 local j = import 'jsonnet/main.libsonnet';
 local openapi = import '../jsonnet-plugin-openapi/main.libsonnet';
 
-local generate(service, spec, links=[], columns=[], contextParams=[], manifest=true, pagination=null, paginationParams=[], sortParams=[]) =
+local generate(service, spec, links=[], columns=[], params=[], contextParams=[], manifest=true, pagination=null, paginationParams=[], sortParams=[]) =
   local le(indent=0) = j.Fodder.LineEnd(0, indent);
   local prettyArray(elements, indent=0) =
     j.Array([
@@ -180,6 +180,13 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
     + (if std.objectHas(p, 'enum') then { enum: p.enum } else {})
     + (if p.required then {} else { default: null });
   local sortRoles = { [name]: 'sort' for name in sortParams };
+  local inferredRoles(op) = {
+    [param.name]: param.role
+    for entry in params
+    if entry.sourcePath == templatePath(op)
+    for param in entry.params
+    if std.member(['filter', 'shaping'], param.role)
+  };
   local paginationRoles = if pagination == null then {} else { [name]: 'pagination' for name in paginationParams };
   local paramSpecsFor(op) =
     std.get(op, 'queryParams', []) + std.get(op, 'headerParams', []);
@@ -257,7 +264,7 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
   local listObject(op, expr) =
     local ls = linksFor(op);
     local table = tableField(op);
-    local specs = paramSpecsField(op, sortRoles + paginationRoles);
+    local specs = paramSpecsField(op, inferredRoles(op) + sortRoles + paginationRoles);
     local fields = [responseField(expr), dataField(access(selfResponse, 'body'), table != null)] +
       (if std.length(ls) == 0 then [] else [linkSpecsField(ls)]) +
       (if table != null then [table] else []) +
@@ -345,9 +352,10 @@ local graph = {
     spec: openapi.nestedSpec($.spec),
     links: std.get($, 'links', []),
     columns: std.get($, 'columns', []),
+    params: std.get($, 'params', []),
   },
   _view:: {
-    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.contextParams, $.manifest, $.pagination, $.paginationParams, $.sortParams),
+    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.data.params, $.contextParams, $.manifest, $.pagination, $.paginationParams, $.sortParams),
   },
 };
 
