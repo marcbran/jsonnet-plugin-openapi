@@ -1,7 +1,7 @@
 local j = import 'jsonnet/main.libsonnet';
 local openapi = import '../jsonnet-plugin-openapi/main.libsonnet';
 
-local generate(service, spec, links=[], columns=[], contextParams=[], manifest=true, pagination=null, paginationParams=[]) =
+local generate(service, spec, links=[], columns=[], contextParams=[], manifest=true, pagination=null, paginationParams=[], sortParams=[]) =
   local le(indent=0) = j.Fodder.LineEnd(0, indent);
   local prettyArray(elements, indent=0) =
     j.Array([
@@ -179,10 +179,11 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
     + (if std.objectHas(p, 'items') then { items: p.items } else {})
     + (if std.objectHas(p, 'enum') then { enum: p.enum } else {})
     + (if p.required then {} else { default: null });
+  local sortRoles = { [name]: 'sort' for name in sortParams };
   local paginationRoles = if pagination == null then {} else { [name]: 'pagination' for name in paginationParams };
   local paramSpecsFor(op) =
     std.get(op, 'queryParams', []) + std.get(op, 'headerParams', []);
-  local paramSpecsField(op, roles={}) =
+  local paramSpecsField(op, roles) =
     local specs = paramSpecsFor(op);
     if std.length(specs) == 0 then null
     else j.Field('_paramSpecs', prettyArray([compactLiteral(paramSpecEntry(p, roles)) for p in specs], 4));
@@ -248,7 +249,7 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
     ) { Hide: 0 };
   local dataObject(op, expr) =
     local ls = linksFor(op);
-    local specs = paramSpecsField(op);
+    local specs = paramSpecsField(op, sortRoles);
     local fields = [responseField(expr), dataField(access(selfResponse, 'body'))] +
       (if std.length(ls) == 0 then [] else [linkSpecsField(ls)]) +
       (if specs == null then [] else [specs]);
@@ -256,7 +257,7 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
   local listObject(op, expr) =
     local ls = linksFor(op);
     local table = tableField(op);
-    local specs = paramSpecsField(op, paginationRoles);
+    local specs = paramSpecsField(op, sortRoles + paginationRoles);
     local fields = [responseField(expr), dataField(access(selfResponse, 'body'), table != null)] +
       (if std.length(ls) == 0 then [] else [linkSpecsField(ls)]) +
       (if table != null then [table] else []) +
@@ -339,13 +340,14 @@ local graph = {
   contextParams:: [],
   pagination:: null,
   paginationParams:: [],
+  sortParams:: ['sort', 'sort_by', 'sortBy', 'order', 'order_by', 'orderBy', 'direction', 'sortDirection', 'sort_direction'],
   data:: {
     spec: openapi.nestedSpec($.spec),
     links: std.get($, 'links', []),
     columns: std.get($, 'columns', []),
   },
   _view:: {
-    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.contextParams, $.manifest, $.pagination, $.paginationParams),
+    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.contextParams, $.manifest, $.pagination, $.paginationParams, $.sortParams),
   },
 };
 

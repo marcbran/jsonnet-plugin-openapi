@@ -1157,11 +1157,13 @@ local arcourseOpenapi = import './main.libsonnet';
       expected: { bodyFieldNames: ['response', 'data'] },
     },
     {
-      name: 'paginationParams mark matching list-node param specs with the pagination role, resource nodes stay unmarked',
+      name: 'paginationParams mark list-node param specs with the pagination role, sortParams mark sort params on every node',
       input:: function()
         local params = [
           { name: 'offset', required: false, type: 'number' },
           { name: 'status', required: false },
+          { name: 'sort_by', required: false },
+          { name: 'filter[sort_by]', required: false },
         ];
         local spec = {
           paths: {
@@ -1198,10 +1200,14 @@ local arcourseOpenapi = import './main.libsonnet';
         incidents: [
           { name: 'offset', role: 'pagination', type: 'number', default: null },
           { name: 'status', type: 'string', default: null },
+          { name: 'sort_by', role: 'sort', type: 'string', default: null },
+          { name: 'filter[sort_by]', type: 'string', default: null },
         ],
         summary: [
           { name: 'offset', type: 'number', default: null },
           { name: 'status', type: 'string', default: null },
+          { name: 'sort_by', role: 'sort', type: 'string', default: null },
+          { name: 'filter[sort_by]', type: 'string', default: null },
         ],
       },
     },
