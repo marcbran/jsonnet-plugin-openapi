@@ -1,7 +1,7 @@
 local j = import 'jsonnet/main.libsonnet';
 local openapi = import '../jsonnet-plugin-openapi/main.libsonnet';
 
-local generate(service, spec, links=[], columns=[], contextParams=[], manifest=true, pagination=null) =
+local generate(service, spec, links=[], columns=[], contextParams=[], manifest=true, pagination=null, paginationParams=[]) =
   local le(indent=0) = j.Fodder.LineEnd(0, indent);
   local prettyArray(elements, indent=0) =
     j.Array([
@@ -173,17 +173,19 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
       for field in std.objectFields(value)
     ])
     else error 'unsupported literal type: ' + std.type(value);
-  local paramSpecEntry(p) =
+  local paramSpecEntry(p, roles) =
     { name: p.name, type: std.get(p, 'type', 'string') }
+    + (if std.objectHas(roles, p.name) then { role: roles[p.name] } else {})
     + (if std.objectHas(p, 'items') then { items: p.items } else {})
     + (if std.objectHas(p, 'enum') then { enum: p.enum } else {})
     + (if p.required then {} else { default: null });
+  local paginationRoles = if pagination == null then {} else { [name]: 'pagination' for name in paginationParams };
   local paramSpecsFor(op) =
     std.get(op, 'queryParams', []) + std.get(op, 'headerParams', []);
-  local paramSpecsField(op) =
+  local paramSpecsField(op, roles={}) =
     local specs = paramSpecsFor(op);
     if std.length(specs) == 0 then null
-    else j.Field('_paramSpecs', prettyArray([compactLiteral(paramSpecEntry(p)) for p in specs], 4));
+    else j.Field('_paramSpecs', prettyArray([compactLiteral(paramSpecEntry(p, roles)) for p in specs], 4));
   local columnsFor(op) =
     local entry = collectionFor(templatePath(op));
     if entry == null then null else std.get(entry, 'columns', null);
@@ -254,7 +256,7 @@ local generate(service, spec, links=[], columns=[], contextParams=[], manifest=t
   local listObject(op, expr) =
     local ls = linksFor(op);
     local table = tableField(op);
-    local specs = paramSpecsField(op);
+    local specs = paramSpecsField(op, paginationRoles);
     local fields = [responseField(expr), dataField(access(selfResponse, 'body'), table != null)] +
       (if std.length(ls) == 0 then [] else [linkSpecsField(ls)]) +
       (if table != null then [table] else []) +
@@ -336,13 +338,14 @@ local graph = {
   manifest:: true,
   contextParams:: [],
   pagination:: null,
+  paginationParams:: [],
   data:: {
     spec: openapi.nestedSpec($.spec),
     links: std.get($, 'links', []),
     columns: std.get($, 'columns', []),
   },
   _view:: {
-    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.contextParams, $.manifest, $.pagination),
+    jsonnet: generate($.service, $.data.spec, $.data.links, $.data.columns, $.contextParams, $.manifest, $.pagination, $.paginationParams),
   },
 };
 

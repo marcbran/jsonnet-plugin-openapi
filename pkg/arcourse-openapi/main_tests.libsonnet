@@ -1157,6 +1157,55 @@ local arcourseOpenapi = import './main.libsonnet';
       expected: { bodyFieldNames: ['response', 'data'] },
     },
     {
+      name: 'paginationParams mark matching list-node param specs with the pagination role, resource nodes stay unmarked',
+      input:: function()
+        local params = [
+          { name: 'offset', required: false, type: 'number' },
+          { name: 'status', required: false },
+        ];
+        local spec = {
+          paths: {
+            children: {
+              incidents: { operation: { pathFormat: '/incidents', queryParams: params } },
+              summary: { operation: { pathFormat: '/summary', queryParams: params } },
+            },
+          },
+        };
+        local generated = arcourseOpenapi.graph {
+          service: 'demo',
+          manifest: false,
+          pagination: '{ links+: { pagination: {} } }',
+          paginationParams: ['offset', 'limit'],
+          columns: [{ sourcePath: '/incidents', array: ['incidents'] }],
+          data+: { spec: spec },
+        }._view.jsonnet;
+        local manifestLiteral(expr) =
+          if expr.__kind__ == 'LiteralString' then expr.value
+          else if expr.__kind__ == 'LiteralNull' then null
+          else if expr.__kind__ == 'Object' then { [f.id]: manifestLiteral(f.expr2) for f in expr.fields }
+          else error 'unexpected kind ' + expr.__kind__;
+        local unwrap(node) = if node.__kind__ == 'Local' then unwrap(node.body) else node;
+        local specs = unwrap(generated).elements;
+        local pathOf(spec) = [part.expr.value for part in spec.expr.elements[0].expr.elements];
+        local paramSpecs(target) =
+          local body = [s for s in specs if pathOf(s) == target][0].expr.elements[1].expr.right;
+          [manifestLiteral(e.expr) for e in [f for f in body.fields if f.id == '_paramSpecs'][0].expr2.elements];
+        {
+          incidents: paramSpecs(['demo', 'incidents']),
+          summary: paramSpecs(['demo', 'summary']),
+        },
+      expected: {
+        incidents: [
+          { name: 'offset', role: 'pagination', type: 'number', default: null },
+          { name: 'status', type: 'string', default: null },
+        ],
+        summary: [
+          { name: 'offset', type: 'number', default: null },
+          { name: 'status', type: 'string', default: null },
+        ],
+      },
+    },
+    {
       name: 'pagination source is parsed once and spliced into a.table.node, not applied per-operation',
       input:: function()
         local spec = {
