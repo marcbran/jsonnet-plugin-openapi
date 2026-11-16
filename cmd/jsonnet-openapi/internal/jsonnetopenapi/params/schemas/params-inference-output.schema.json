@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sourcePath", "operationId", "params", "confidence", "reason"],
+  "properties": {
+    "sourcePath": {
+      "type": "string"
+    },
+    "operationId": {
+      "type": ["string", "null"]
+    },
+    "params": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "role", "reason"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["filter", "shaping", "pagination", "sort", "other"]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

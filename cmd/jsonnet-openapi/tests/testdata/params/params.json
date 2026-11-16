@@ -1,0 +1,24 @@
+[
+   {
+      "operationId": "listUsers",
+      "params": [
+         {
+            "name": "include[]",
+            "role": "shaping"
+         },
+         {
+            "name": "limit",
+            "role": "pagination"
+         },
+         {
+            "name": "sort",
+            "role": "sort"
+         },
+         {
+            "name": "status",
+            "role": "filter"
+         }
+      ],
+      "sourcePath": "/users"
+   }
+]
