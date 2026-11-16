@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.8.0...v0.9.0) (2026-11-16)
+
+
+### Features
+
+* emit typed param specs from parameter schemas ([#110](https://github.com/marcbran/jsonnet-plugin-openapi/issues/110)) ([7bd9c19](https://github.com/marcbran/jsonnet-plugin-openapi/commit/7bd9c193c826e11687089e9dd33103e4dc305f21))
+* mark param roles ([#112](https://github.com/marcbran/jsonnet-plugin-openapi/issues/112)) ([44a02e6](https://github.com/marcbran/jsonnet-plugin-openapi/commit/44a02e65814f312b688796004d61bd0e9a6a8bef))
+
 ## [0.8.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.7.0...v0.8.0) (2026-11-08)
 
 
