@@ -285,42 +285,46 @@ func TestSanitizeServiceSlug(t *testing.T) {
 	}
 }
 
-func TestCanonicalizeParameters(t *testing.T) {
+func TestMergeParameters(t *testing.T) {
 	tests := []struct {
-		name string
-		in   []Parameter
-		want []Parameter
+		name       string
+		pathParams []Parameter
+		opParams   []Parameter
+		want       []Parameter
 	}{
 		{
-			name: "empty",
-			in:   []Parameter{},
-			want: []Parameter{},
-		},
-		{
-			name: "single",
-			in:   []Parameter{{Name: "a", In: "query"}},
-			want: []Parameter{{Name: "a", In: "query"}},
-		},
-		{
-			name: "sorts by in then name",
-			in: []Parameter{
-				{Name: "zebra", In: "query"},
-				{Name: "HeaderB", In: "header"},
-				{Name: "alpha", In: "query"},
-				{Name: "HeaderA", In: "header"},
+			name: "keeps the declared order",
+			opParams: []Parameter{
+				{Name: "state", In: "query"},
+				{Name: "sort", In: "query"},
+				{Name: "direction", In: "query"},
 			},
 			want: []Parameter{
-				{Name: "HeaderA", In: "header"},
-				{Name: "HeaderB", In: "header"},
-				{Name: "alpha", In: "query"},
-				{Name: "zebra", In: "query"},
+				{Name: "state", In: "query"},
+				{Name: "sort", In: "query"},
+				{Name: "direction", In: "query"},
+			},
+		},
+		{
+			name: "operation params override path params in place",
+			pathParams: []Parameter{
+				{Name: "q", In: "query"},
+				{Name: "X-Trace", In: "header"},
+			},
+			opParams: []Parameter{
+				{Name: "limit", In: "query"},
+				{Name: "q", In: "query", Required: true},
+			},
+			want: []Parameter{
+				{Name: "q", In: "query", Required: true},
+				{Name: "X-Trace", In: "header"},
+				{Name: "limit", In: "query"},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := canonicalizeParameters(tt.in)
-			require.Equal(t, tt.want, got)
+			require.Equal(t, tt.want, mergeParameters(tt.pathParams, tt.opParams))
 		})
 	}
 }

@@ -7,12 +7,12 @@
         method: 'GET',
         path: '/items',
         query: {
-          alpha: std.get(query, 'alpha', null),
           zebra: std.get(query, 'zebra', null),
+          alpha: std.get(query, 'alpha', null),
         },
         headers: {
-          HeaderA: std.get(headers, 'HeaderA', null),
           HeaderB: std.get(headers, 'HeaderB', null),
+          HeaderA: std.get(headers, 'HeaderA', null),
         },
       },
     ]),
