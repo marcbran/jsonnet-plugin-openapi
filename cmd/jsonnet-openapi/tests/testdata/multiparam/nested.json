@@ -5,12 +5,12 @@
         "operation": {
           "headerParams": [
             {
-              "name": "HeaderA",
+              "name": "HeaderB",
               "required": false,
               "type": "string"
             },
             {
-              "name": "HeaderB",
+              "name": "HeaderA",
               "required": false,
               "type": "string"
             }
@@ -21,12 +21,12 @@
           "pathTemplate": "/items",
           "queryParams": [
             {
-              "name": "alpha",
+              "name": "zebra",
               "required": false,
               "type": "string"
             },
             {
-              "name": "zebra",
+              "name": "alpha",
               "required": false,
               "type": "string"
             }

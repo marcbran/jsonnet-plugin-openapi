@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -48,7 +47,7 @@ func collectGETOperations(paths []PathItem) []GETOperation {
 		out = append(out, GETOperation{
 			Path:        p.Path,
 			OperationID: p.Get.OperationID,
-			Parameters:  canonicalizeParameters(mergeParameters(p.Parameters, p.Get.Parameters)),
+			Parameters:  mergeParameters(p.Parameters, p.Get.Parameters),
 		})
 	}
 	return out
@@ -61,30 +60,17 @@ type GETOperation struct {
 }
 
 func mergeParameters(pathParams, opParams []Parameter) []Parameter {
-	byKey := make(map[string]Parameter, len(pathParams)+len(opParams))
-	for _, p := range pathParams {
-		byKey[p.In+":"+p.Name] = p
-	}
-	for _, p := range opParams {
-		byKey[p.In+":"+p.Name] = p
-	}
-	out := make([]Parameter, 0, len(byKey))
-	for _, p := range byKey {
+	out := make([]Parameter, 0, len(pathParams)+len(opParams))
+	index := make(map[string]int, len(pathParams)+len(opParams))
+	for _, p := range append(append([]Parameter(nil), pathParams...), opParams...) {
+		key := p.In + ":" + p.Name
+		if i, ok := index[key]; ok {
+			out[i] = p
+			continue
+		}
+		index[key] = len(out)
 		out = append(out, p)
 	}
-	return out
-}
-
-func canonicalizeParameters(params []Parameter) []Parameter {
-	if len(params) <= 1 {
-		return params
-	}
-	out := append([]Parameter(nil), params...)
-	sort.Slice(out, func(i, j int) bool {
-		ki := out[i].In + ":" + out[i].Name
-		kj := out[j].In + ":" + out[j].Name
-		return ki < kj
-	})
 	return out
 }
 
