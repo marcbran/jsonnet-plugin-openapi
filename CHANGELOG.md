@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.9.0...v0.10.0) (2026-11-17)
+
+
+### Features
+
+* keep the declared param order in generated specs ([#113](https://github.com/marcbran/jsonnet-plugin-openapi/issues/113)) ([ab55fbb](https://github.com/marcbran/jsonnet-plugin-openapi/commit/ab55fbb72feac955cea6524e9959f750c7bf00ea))
+
 ## [0.9.0](https://github.com/marcbran/jsonnet-plugin-openapi/compare/v0.8.0...v0.9.0) (2026-11-16)
 
 
